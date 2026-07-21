@@ -100,7 +100,9 @@ public final class UserMenu {
                 case "1", "2", "3" -> catalogMenu.handleOptions(
                         option, scanner);
                 case "4" -> {
-                    long id = InputValidator.getValidId(scanner, "Enter id of product to add to Bucket:");
+                    long id = InputValidator.getValidId(
+                            scanner, "Enter id of product to add to Bucket:"
+                    );
                     try {
                         Product productToAdd = marketPlaceService
                                 .getProductById(id);
@@ -160,17 +162,22 @@ public final class UserMenu {
 
         switch (option) {
             case "1" -> {
-                user.setFirstName(InputValidator.getValidName(scanner, "First Name"));
+                user.setFirstName(InputValidator.getValidName(
+                        scanner, "First Name")
+                );
                 System.out.println("First Name updated!");
             }
             case "2" -> {
-                user.setLastName(InputValidator.getValidName(scanner, "Last Name"));
+                user.setLastName(InputValidator.getValidName(
+                        scanner, "Last Name")
+                );
                 System.out.println("Last Name updated!");
             }
             case "3" -> user.setAge(InputValidator.getValidAge(scanner));
 
             case "4" -> {
-                Gender gender = InputValidator.getValidGenderFromConsole(scanner);
+                Gender gender = InputValidator
+                        .getValidGenderFromConsole(scanner);
                 user.setGender(gender);
             }
             case "5" -> {
@@ -178,7 +185,8 @@ public final class UserMenu {
                         scanner, userService);
                 user.setEmail(email);
             }
-            case "6" -> user.setPassword(InputValidator.getValidPassword(scanner));
+            case "6" -> user.setPassword(InputValidator
+                    .getValidPassword(scanner));
 
             case "0" -> System.out.println("Editing cancelled.");
             default -> System.out.println("Invalid option!");

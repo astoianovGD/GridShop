@@ -88,9 +88,13 @@ public final class Main {
         Admin firstAdmin = new Admin();
         firstAdmin.setId(AbstractUser.generateNextId());
 
-        firstAdmin.setFirstName(InputValidator.getValidName(scanner, "First Name"));
+        firstAdmin.setFirstName(InputValidator.getValidName(
+                scanner, "First Name")
+        );
 
-        firstAdmin.setLastName(InputValidator.getValidName(scanner, "Last Name"));
+        firstAdmin.setLastName(InputValidator.getValidName(
+                scanner, "Last Name")
+        );
 
         firstAdmin.setEmail(EmailValidator.getValidEmailFromConsole(scanner));
 

@@ -67,7 +67,9 @@ public final class StaffMenu {
         System.out.println("Enter product name: ");
         newProduct.setName(scanner.nextLine());
 
-        BigDecimal price = InputValidator.getValidPrice(scanner, "Enter product price:");
+        BigDecimal price = InputValidator.getValidPrice(
+                scanner, "Enter product price:"
+        );
         newProduct.setPrice(price);
 
         marketPlaceService.addNewProduct(newProduct);
@@ -108,7 +110,9 @@ public final class StaffMenu {
      * @param scanner the scanner used to read user input
      */
     private void handleRemoveProduct(final Scanner scanner) {
-        long id = InputValidator.getValidId(scanner, "Enter id of product to delete:");
+        long id = InputValidator.getValidId(
+                scanner, "Enter id of product to delete:"
+        );
         try {
             marketPlaceService.removeProduct(id);
             System.out.println("Product successfully deleted!");
@@ -123,7 +127,9 @@ public final class StaffMenu {
      * @param scanner the scanner used to read user input
      */
     private void handleEditProduct(final Scanner scanner) {
-        long id = InputValidator.getValidId(scanner, "Enter id of product to edit:");
+        long id = InputValidator.getValidId(
+                scanner, "Enter id of product to edit:"
+        );
         try {
             Product product = marketPlaceService.getProductById(id);
             editProductInfoMenu(scanner, product);
@@ -147,7 +153,9 @@ public final class StaffMenu {
         System.out.println("All users:");
         users.forEach(System.out::println);
 
-        long id = InputValidator.getValidId(scanner, "Enter user's id to view:");
+        long id = InputValidator.getValidId(
+                scanner, "Enter user's id to view:"
+        );
         try {
             User user = userService.getUserById(id);
             handleUserSubMenu(scanner, user);
@@ -211,7 +219,9 @@ public final class StaffMenu {
             System.out.println("Enter new name: ");
             product.setName(scanner.nextLine());
         } else if (option.equals("2")) {
-            BigDecimal newPrice = InputValidator.getValidPrice(scanner, "Enter new price:");
+            BigDecimal newPrice = InputValidator.getValidPrice(
+                    scanner, "Enter new price:"
+            );
             product.setPrice(newPrice);
             System.out.println("Price successfully updated!");
         } else {

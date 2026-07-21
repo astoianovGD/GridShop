@@ -102,13 +102,17 @@ public final class CatalogMenu {
                         marketPlaceService.getAllProducts());
             }
             case "2" -> {
-                BigDecimal minPrice = InputValidator.getValidPrice(scanner, "Enter minimum price:");
+                BigDecimal minPrice = InputValidator.getValidPrice(
+                        scanner, "Enter minimum price:"
+                );
                 yield filterProductsService.filterProductsByPriceHigherThan(
                         minPrice,
                         marketPlaceService.getAllProducts());
             }
             case "3" -> {
-                BigDecimal maxPrice = InputValidator.getValidPrice(scanner, "Enter maximum price:");
+                BigDecimal maxPrice = InputValidator.getValidPrice(
+                        scanner, "Enter maximum price:"
+                );
                 yield filterProductsService.filterProductsByPriceLowerThan(
                         maxPrice,
                         marketPlaceService.getAllProducts());

@@ -90,7 +90,9 @@ public final class AdminMenu {
      * @param scanner the scanner for reading user input
      */
     private void handleEditStaff(final Scanner scanner) {
-        long id = InputValidator.getValidId(scanner, "Enter ID of Staff to edit:");
+        long id = InputValidator.getValidId(
+                scanner, "Enter ID of Staff to edit:"
+        );
         try {
             Staff staff = staffService.getStaffById(id);
             editStaffInfo(scanner, staff);
@@ -105,7 +107,9 @@ public final class AdminMenu {
      * @param scanner the scanner for reading user input
      */
     private void handleDeleteStaff(final Scanner scanner) {
-        long idToDelete = InputValidator.getValidId(scanner, "Enter ID of Staff to delete:");
+        long idToDelete = InputValidator.getValidId(
+                scanner, "Enter ID of Staff to delete:"
+        );
         try {
             staffService.removeStaff(idToDelete);
             System.out.println("Staff successfully deleted!");
@@ -123,9 +127,13 @@ public final class AdminMenu {
         System.out.println("---- ADD NEW STAFF ----");
         Staff newStaff = new Staff();
 
-        newStaff.setFirstName(InputValidator.getValidName(scanner, "First Name"));
+        newStaff.setFirstName(InputValidator.getValidName(
+                scanner, "First Name")
+        );
 
-        newStaff.setLastName(InputValidator.getValidName(scanner, "Last Name"));
+        newStaff.setLastName(InputValidator.getValidName(
+                scanner, "Last Name")
+        );
 
         String email = EmailValidator.getUniqueEmailFromConsole(
                 scanner, userService);
@@ -152,11 +160,15 @@ public final class AdminMenu {
         switch (option) {
             case "1" -> {
                 System.out.println("Enter new First Name:");
-                staff.setFirstName(InputValidator.getValidName(scanner, "First Name"));
+                staff.setFirstName(InputValidator.getValidName(
+                        scanner, "First Name")
+                );
             }
             case "2" -> {
                 System.out.println("Enter new Last Name:");
-                staff.setLastName(InputValidator.getValidName(scanner, "Last Name"));
+                staff.setLastName(InputValidator.getValidName(
+                        scanner, "Last Name")
+                );
             }
             case "3" -> {
                 String email = EmailValidator.getUniqueEmailFromConsole(

@@ -62,7 +62,9 @@ public final class BucketMenu {
                 }
                 case "2" -> {
                     try {
-                        long id = InputValidator.getValidId(scanner, "Enter Product ID to remove:");
+                        long id = InputValidator.getValidId(
+                                scanner, "Enter Product ID to remove:"
+                        );
                         Product product = marketPlaceService.getProductById(id);
                         bucketService.removeProductFromBucket(
                                 user.getBucket(), product);
@@ -102,7 +104,8 @@ public final class BucketMenu {
             if (cardPattern.matcher(input).matches()) {
                 break;
             }
-            System.out.println("Bad card format try (**** **** **** ****, or without spaces)");
+            System.out.println("Bad card format try (**** **** **** ****, "
+                    + "or without spaces)");
         }
 
         System.out.println("Processing...");
