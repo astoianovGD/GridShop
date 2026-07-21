@@ -90,12 +90,12 @@ class StaffMenuTest {
     @Test
     @DisplayName("Should handle NumberFormatException when entering invalid price format for product addition")
     void testHandleAddProduct_InvalidPriceFormat() {
-        // Flow: 1 -> Name -> "abc" (invalid price) -> 0
-        Scanner scanner = new Scanner("1\nKeyboard\nabc\n0\n");
+        // Flow: 1 -> Name -> "abc" (invalid price) -> "10.00" (valid price to break validator loop) -> 0 (Sign out)
+        Scanner scanner = new Scanner("1\nKeyboard\nabc\n10.00\n0\n");
         staffMenu.menu(scanner);
 
-        verify(marketPlaceServiceMock, never()).addNewProduct(any());
-        assertTrue(outContent.toString().contains("Invalid price format! Product not added."));
+        verify(marketPlaceServiceMock, times(1)).addNewProduct(any());
+        assertTrue(outContent.toString().contains("Invalid price format! Please enter a valid number."));
     }
 
     @Test
@@ -143,9 +143,8 @@ class StaffMenuTest {
         when(marketPlaceServiceMock.getAllProducts()).thenReturn(Collections.emptyList());
         doThrow(new EntityNotFoundException("Product not found!")).when(marketPlaceServiceMock).removeProduct(99L);
 
-        // Flow: 2 -> 4 -> "abc" (NumberFormat)
-        // 2 -> 4 -> "99" (EntityNotFound) -> 0 -> 0
-        Scanner scanner = new Scanner("2\n4\nabc\n4\n99\n0\n0\n");
+        // Flow: 2 -> 4 (Remove) -> "abc" -> "10" (valid ID to break loop) -> 4 -> 99 (EntityNotFound) -> 0 -> 0
+        Scanner scanner = new Scanner("2\n4\nabc\n10\n4\n99\n0\n0\n");
         staffMenu.menu(scanner);
 
         assertTrue(outContent.toString().contains("Invalid ID format! Please enter a valid number."));
@@ -174,9 +173,10 @@ class StaffMenuTest {
         when(marketPlaceServiceMock.getProductById(1L)).thenReturn(product);
 
         // Flow:
-        // 2 -> 5 -> 1 -> 2 (Edit Price) -> "abc" (Invalid format)
-        // 2 -> 5 -> 1 -> 2 (Edit Price) -> "99.99" (Success) -> 0 -> 0
-        Scanner scanner = new Scanner("2\n5\n1\n2\nabc\n5\n1\n2\n99.99\n0\n0\n");
+        // 2 -> 5 -> 1 -> 2 (Edit Price)
+        // -> "abc" (Invalid format in validator) -> "99.99" (Valid price to break loop)
+        // -> 0 (Nothing) -> 0 (Sign out)
+        Scanner scanner = new Scanner("2\n5\n1\n2\nabc\n99.99\n0\n0\n");
         staffMenu.menu(scanner);
 
         assertTrue(outContent.toString().contains("Invalid price format! Please enter a valid number."));
@@ -190,13 +190,13 @@ class StaffMenuTest {
         Product product = new Product(1L, "Item", BigDecimal.TEN);
         when(marketPlaceServiceMock.getAllProducts()).thenReturn(List.of(product));
         when(marketPlaceServiceMock.getProductById(1L)).thenReturn(product);
+        when(marketPlaceServiceMock.getProductById(99L)).thenThrow(new EntityNotFoundException("Not found"));
 
         // Flow:
-        // 2 -> 5 -> "abc" (NumberFormat ID)
-        // 2 -> 5 -> "99" (EntityNotFound ID)
+        // 2 -> 5 -> "abc" -> "1" (valid ID to break loop) -> 1 (Edit Name) -> "NewName"
+        // 2 -> 5 -> "99" (EntityNotFound)
         // 2 -> 5 -> 1 -> 99 (Invalid sub-option) -> 0 -> 0
-        Scanner scanner = new Scanner("2\n5\nabc\n5\n99\n5\n1\n99\n0\n0\n");
-        when(marketPlaceServiceMock.getProductById(99L)).thenThrow(new EntityNotFoundException("Not found"));
+        Scanner scanner = new Scanner("2\n5\nabc\n1\n1\nNewName\n5\n99\n5\n1\n99\n0\n0\n");
 
         staffMenu.menu(scanner);
 
@@ -273,12 +273,13 @@ class StaffMenuTest {
         User user = new User();
         user.setId(1L);
         when(userServiceMock.getAllUsers()).thenReturn(List.of(user));
+        when(userServiceMock.getUserById(1L)).thenReturn(user);
         when(userServiceMock.getUserById(55L)).thenThrow(new EntityNotFoundException("User not found"));
 
         // Flow:
-        // 3 -> "abc" (NumberFormat ID)
-        // 3 -> "55" (EntityNotFound ID) -> 0
-        Scanner scanner = new Scanner("3\nabc\n3\n55\n0\n");
+        // 3 -> "abc" -> "1" (valid ID to break validator loop) -> 0 (Exit sub-menu)
+        // 3 -> "55" (EntityNotFound) -> 0 (Sign out)
+        Scanner scanner = new Scanner("3\nabc\n1\n0\n3\n55\n0\n");
         staffMenu.menu(scanner);
 
         assertTrue(outContent.toString().contains("Invalid ID format! Please enter a valid number."));

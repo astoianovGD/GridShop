@@ -2,7 +2,6 @@ package com.bobocode.Menus;
 
 import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Entities.Users.User;
-import com.bobocode.Enums.Gender;
 import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.User.AuthService;
 import com.bobocode.Services.User.UserService;

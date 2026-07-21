@@ -5,6 +5,7 @@ import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.User.StaffService;
 import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
+import com.bobocode.Utility.InputValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -89,15 +90,12 @@ public final class AdminMenu {
      * @param scanner the scanner for reading user input
      */
     private void handleEditStaff(final Scanner scanner) {
-        System.out.println("Enter ID of Staff to edit:");
+        long id = InputValidator.getValidId(scanner, "Enter ID of Staff to edit:");
         try {
-            long id = Long.parseLong(scanner.nextLine());
             Staff staff = staffService.getStaffById(id);
             editStaffInfo(scanner, staff);
         } catch (EntityNotFoundException e) {
             System.out.println(e.getMessage());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format! Please enter a number.");
         }
     }
 
@@ -107,13 +105,10 @@ public final class AdminMenu {
      * @param scanner the scanner for reading user input
      */
     private void handleDeleteStaff(final Scanner scanner) {
-        System.out.println("Enter ID of Staff to delete:");
+        long idToDelete = InputValidator.getValidId(scanner, "Enter ID of Staff to delete:");
         try {
-            long idToDelete = Long.parseLong(scanner.nextLine());
             staffService.removeStaff(idToDelete);
             System.out.println("Staff successfully deleted!");
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format! Please enter a number.");
         } catch (EntityNotFoundException | IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
@@ -128,18 +123,15 @@ public final class AdminMenu {
         System.out.println("---- ADD NEW STAFF ----");
         Staff newStaff = new Staff();
 
-        System.out.println("Enter First Name: ");
-        newStaff.setFirstName(scanner.nextLine());
+        newStaff.setFirstName(InputValidator.getValidName(scanner, "First Name"));
 
-        System.out.println("Enter Last Name: ");
-        newStaff.setLastName(scanner.nextLine());
+        newStaff.setLastName(InputValidator.getValidName(scanner, "Last Name"));
 
         String email = EmailValidator.getUniqueEmailFromConsole(
                 scanner, userService);
         newStaff.setEmail(email);
 
-        System.out.println("Enter Password: ");
-        newStaff.setPassword(scanner.nextLine());
+        newStaff.setPassword(InputValidator.getValidPassword(scanner));
 
         staffService.addNewStaff(newStaff);
         System.out.println("Staff was successfully added!");
@@ -160,11 +152,11 @@ public final class AdminMenu {
         switch (option) {
             case "1" -> {
                 System.out.println("Enter new First Name:");
-                staff.setFirstName(scanner.nextLine());
+                staff.setFirstName(InputValidator.getValidName(scanner, "First Name"));
             }
             case "2" -> {
                 System.out.println("Enter new Last Name:");
-                staff.setLastName(scanner.nextLine());
+                staff.setLastName(InputValidator.getValidName(scanner, "Last Name"));
             }
             case "3" -> {
                 String email = EmailValidator.getUniqueEmailFromConsole(
@@ -174,7 +166,7 @@ public final class AdminMenu {
             }
             case "4" -> {
                 System.out.println("Enter new Password ");
-                staff.setPassword(scanner.nextLine());
+                staff.setPassword(InputValidator.getValidPassword(scanner));
             }
             case "0" -> {
                 System.out.println("Editing cancelled.");

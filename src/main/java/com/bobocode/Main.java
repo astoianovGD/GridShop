@@ -24,6 +24,7 @@ import com.bobocode.Services.User.UserConsoleViewService;
 import com.bobocode.Services.User.UserService;
 
 import com.bobocode.Utility.EmailValidator;
+import com.bobocode.Utility.InputValidator;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -87,16 +88,13 @@ public final class Main {
         Admin firstAdmin = new Admin();
         firstAdmin.setId(AbstractUser.generateNextId());
 
-        System.out.println("Enter first name: ");
-        firstAdmin.setFirstName(scanner.nextLine());
+        firstAdmin.setFirstName(InputValidator.getValidName(scanner, "First Name"));
 
-        System.out.println("Enter last name: ");
-        firstAdmin.setLastName(scanner.nextLine());
+        firstAdmin.setLastName(InputValidator.getValidName(scanner, "Last Name"));
 
         firstAdmin.setEmail(EmailValidator.getValidEmailFromConsole(scanner));
 
-        System.out.println("Enter password: ");
-        firstAdmin.setPassword(scanner.nextLine());
+        firstAdmin.setPassword(InputValidator.getValidPassword(scanner));
 
         allUsers.put(firstAdmin.getId(), firstAdmin);
         System.out.println("Admin successfully created!\n");

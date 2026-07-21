@@ -144,18 +144,20 @@ class BucketMenuTest {
         // Arrange
         User user = new User();
         Bucket bucket = new Bucket();
-        bucket.getProductsInBucket().add(new Product(1L, "Phone", BigDecimal.valueOf(500)));
+        Product product = new Product(1L, "Phone", BigDecimal.valueOf(500));
+        bucket.getProductsInBucket().add(product);
         user.setBucket(bucket);
 
-        // Flow: 2 (Remove Item) -> "abc" (invalid ID text) -> 0 (Go Back)
-        Scanner scanner = new Scanner("2\nabc\n0\n");
+        // Flow: 2 (Remove Item) -> "abc" (invalid) -> "5" (valid ID to break loop) -> 0 (Go Back)
+        Scanner scanner = new Scanner("2\nabc\n5\n0\n");
+        when(marketPlaceServiceMock.getProductById(5L)).thenReturn(product);
 
         // Act
         bucketMenu.handleBucket(user, scanner);
 
         // Assert
-        assertTrue(outContent.toString().contains("Invalid ID format! Please enter a number."));
-        verify(marketPlaceServiceMock, never()).getProductById(anyLong());
+        assertTrue(outContent.toString().contains("Invalid ID format! Please enter a valid number."));
+        verify(marketPlaceServiceMock, times(1)).getProductById(5L);
     }
 
     @Test
@@ -193,8 +195,8 @@ class BucketMenuTest {
 
         when(bucketServiceMock.getProductsFromBucket(initialBucket)).thenReturn(initialBucket.getProductsInBucket());
 
-        // Flow: 1 (Purchase Items) -> "1234-5678-9012-3456" (Card number inside checkout)
-        Scanner scanner = new Scanner("1\n1234-5678-9012-3456\n");
+        // Flow: 1 (Purchase Items) -> "1234567890123456" (exact 16 digits without hyphens to match ^\d{16}$)
+        Scanner scanner = new Scanner("1\n1234567890123456\n");
 
         // Act
         bucketMenu.handleBucket(user, scanner);

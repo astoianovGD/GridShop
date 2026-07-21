@@ -183,17 +183,21 @@ class UserMenuTest {
     @DisplayName("Should handle NumberFormatException and EntityNotFoundException when adding product to bucket")
     void testHandleBrowseProducts_AddToBucket_Errors() {
         User user = new User();
-        when(marketPlaceServiceMock.getAllProducts()).thenReturn(Collections.emptyList());
+        user.setBucket(new Bucket());
+        Product product = new Product(5L, "Phone", BigDecimal.valueOf(500));
+
+        when(marketPlaceServiceMock.getAllProducts()).thenReturn(List.of(product));
+        when(marketPlaceServiceMock.getProductById(5L)).thenReturn(product);
         when(marketPlaceServiceMock.getProductById(99L)).thenThrow(new EntityNotFoundException("Product not found"));
 
         // Flow:
-        // 1 -> 4 -> "abc" (NumberFormat ID)
-        // 1 -> 4 -> "99" (EntityNotFound ID) -> 0 -> 0
-        Scanner scanner = new Scanner("1\n4\nabc\n4\n99\n0\n0\n");
+        // 1 -> 4 -> "abc" -> "5" (валідний ID щоб вийти з циклу)
+        // 1 -> 4 -> "99" (EntityNotFound) -> 0 -> 0
+        Scanner scanner = new Scanner("1\n4\nabc\n5\n4\n99\n0\n0\n");
 
         userMenu.menu(user, scanner);
 
-        assertTrue(outContent.toString().contains("Invalid ID format! Please enter a number."));
+        assertTrue(outContent.toString().contains("Invalid ID format! Please enter a valid number."));
         assertTrue(outContent.toString().contains("Product not found"));
     }
 
@@ -228,25 +232,23 @@ class UserMenuTest {
         User user = new User();
         user.setId(1L);
 
-        // Flow to test each edit option inside editUserProfile:
-        // 2 (View personal data) -> 1 (Edit profile)
-        // -> 1 (First Name) -> "John"
-        // -> 1 -> 2 (Last Name) -> "Doe"
-        // -> 1 -> 3 (Age) -> "abc" (NumberFormat error)
-        // -> 1 -> 3 (Age) -> "30" (Success)
-        // -> 1 -> 4 (Gender) -> "INVALID" (Gender error retry) -> "MALE" (Success)
-        // -> 1 -> 6 (Password) -> "newPass123"
-        // -> 1 -> 0 (Cancel)
-        // -> 0 -> 0
-        String simulatedInput = "2\n1\n" +
-                "1\nJohn\n" +
-                "1\n2\nDoe\n" +
-                "1\n3\nabc\n" +
-                "1\n3\n30\n" +
-                "1\n4\nINVALID\nMALE\n" +
-                "1\n6\nnewPass123\n" +
-                "1\n0\n" +
-                "0\n0\n";
+        // Input sequence (Flow):
+        // We invoke editing for each field separately since each entry into the edit menu updates only one field and exits:
+        // 1. Edit First Name: 2 (View data) -> 1 (Edit) -> 1 (First Name) -> "John" -> 0 (Exit data)
+        // 2. Edit Last Name:  2 -> 1 -> 2 (Last Name) -> "Doe" -> 0
+        // 3. Edit Age (with "abc" error then valid "30"): 2 -> 1 -> 3 (Age) -> "abc" -> "30" -> 0
+        // 4. Edit Gender (with "INVALID" error then "MALE"): 2 -> 1 -> 4 (Gender) -> "INVALID" -> "MALE" -> 0
+        // 5. Edit Password: 2 -> 1 -> 6 (Password) -> "newPass123" -> 0
+        // 6. Test Cancel: 2 -> 1 -> 0 (Cancel) -> 0
+        // 7. Exit main menu: 0
+        String simulatedInput =
+                "2\n1\n1\nJohn\n0\n" +
+                        "2\n1\n2\nDoe\n0\n" +
+                        "2\n1\n3\nabc\n30\n0\n" +
+                        "2\n1\n4\nINVALID\nMALE\n0\n" +
+                        "2\n1\n6\nnewPass123\n0\n" +
+                        "2\n1\n0\n0\n" +
+                        "0\n";
 
         Scanner scanner = new Scanner(simulatedInput);
 
@@ -257,7 +259,7 @@ class UserMenuTest {
         assertEquals(30, user.getAge());
         assertEquals(Gender.MALE, user.getGender());
         assertEquals("newPass123", user.getPassword());
-        assertTrue(outContent.toString().contains("Invalid input! Please enter a valid number."));
+        assertTrue(outContent.toString().contains("Invalid format! Please enter a valid number for age."));
         assertTrue(outContent.toString().contains("Invalid gender! Please enter exactly MALE, FEMALE, or OTHER:"));
         assertTrue(outContent.toString().contains("Editing cancelled."));
     }

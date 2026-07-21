@@ -6,6 +6,7 @@ import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.Products.MarketPlaceService;
 import com.bobocode.Services.User.UserConsoleViewService;
 import com.bobocode.Services.User.UserService;
+import com.bobocode.Utility.InputValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -65,14 +66,12 @@ public final class StaffMenu {
         Product newProduct = new Product();
         System.out.println("Enter product name: ");
         newProduct.setName(scanner.nextLine());
-        System.out.println("Enter product price: ");
-        try {
-            newProduct.setPrice(new BigDecimal(scanner.nextLine()));
-            marketPlaceService.addNewProduct(newProduct);
-            System.out.println("Product successfully added!");
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid price format! Product not added.");
-        }
+
+        BigDecimal price = InputValidator.getValidPrice(scanner, "Enter product price:");
+        newProduct.setPrice(price);
+
+        marketPlaceService.addNewProduct(newProduct);
+        System.out.println("Product successfully added!");
     }
 
     /**
@@ -109,14 +108,10 @@ public final class StaffMenu {
      * @param scanner the scanner used to read user input
      */
     private void handleRemoveProduct(final Scanner scanner) {
-        System.out.println("Enter id of product to delete: ");
+        long id = InputValidator.getValidId(scanner, "Enter id of product to delete:");
         try {
-            long id = Long.parseLong(scanner.nextLine());
             marketPlaceService.removeProduct(id);
             System.out.println("Product successfully deleted!");
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format! "
-                    + "Please enter a valid number.");
         } catch (EntityNotFoundException e) {
             System.out.println(e.getMessage());
         }
@@ -128,14 +123,10 @@ public final class StaffMenu {
      * @param scanner the scanner used to read user input
      */
     private void handleEditProduct(final Scanner scanner) {
-        System.out.println("Enter id of product to edit: ");
+        long id = InputValidator.getValidId(scanner, "Enter id of product to edit:");
         try {
-            long id = Long.parseLong(scanner.nextLine());
             Product product = marketPlaceService.getProductById(id);
             editProductInfoMenu(scanner, product);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format! "
-                    + "Please enter a valid number.");
         } catch (EntityNotFoundException e) {
             System.out.println(e.getMessage());
         }
@@ -156,14 +147,10 @@ public final class StaffMenu {
         System.out.println("All users:");
         users.forEach(System.out::println);
 
-        System.out.println("Enter user's id to view: ");
+        long id = InputValidator.getValidId(scanner, "Enter user's id to view:");
         try {
-            long id = Long.parseLong(scanner.nextLine());
             User user = userService.getUserById(id);
             handleUserSubMenu(scanner, user);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid ID format! "
-                    + "Please enter a valid number.");
         } catch (EntityNotFoundException e) {
             System.out.println(e.getMessage());
         }
@@ -224,14 +211,9 @@ public final class StaffMenu {
             System.out.println("Enter new name: ");
             product.setName(scanner.nextLine());
         } else if (option.equals("2")) {
-            System.out.println("Enter new price: ");
-            try {
-                product.setPrice(new BigDecimal(scanner.nextLine()));
-                System.out.println("Price successfully updated!");
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid price format! "
-                        + "Please enter a valid number.");
-            }
+            BigDecimal newPrice = InputValidator.getValidPrice(scanner, "Enter new price:");
+            product.setPrice(newPrice);
+            System.out.println("Price successfully updated!");
         } else {
             System.out.println("Invalid Option!");
         }

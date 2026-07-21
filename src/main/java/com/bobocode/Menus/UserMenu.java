@@ -9,6 +9,7 @@ import com.bobocode.Services.Products.MarketPlaceService;
 import com.bobocode.Services.User.UserConsoleViewService;
 import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
+import com.bobocode.Utility.InputValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -99,18 +100,13 @@ public final class UserMenu {
                 case "1", "2", "3" -> catalogMenu.handleOptions(
                         option, scanner);
                 case "4" -> {
-                    System.out.println("Enter id of product to "
-                            + "add to Bucket: ");
+                    long id = InputValidator.getValidId(scanner, "Enter id of product to add to Bucket:");
                     try {
-                        long id = Long.parseLong(scanner.nextLine());
                         Product productToAdd = marketPlaceService
                                 .getProductById(id);
                         bucketService.addProductToBucket(
                                 user.getBucket(), productToAdd);
                         System.out.println("Product added to bucket!");
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid ID format! "
-                                + "Please enter a number.");
                     } catch (EntityNotFoundException e) {
                         System.out.println(e.getMessage());
                     }
@@ -164,41 +160,17 @@ public final class UserMenu {
 
         switch (option) {
             case "1" -> {
-                System.out.println("Enter new First Name:");
-                user.setFirstName(scanner.nextLine());
+                user.setFirstName(InputValidator.getValidName(scanner, "First Name"));
                 System.out.println("First Name updated!");
             }
             case "2" -> {
-                System.out.println("Enter new Last Name:");
-                user.setLastName(scanner.nextLine());
+                user.setLastName(InputValidator.getValidName(scanner, "Last Name"));
                 System.out.println("Last Name updated!");
             }
-            case "3" -> {
-                System.out.println("Enter new Age:");
-                try {
-                    user.setAge(Integer.parseInt(scanner.nextLine()));
-                    System.out.println("Age updated!");
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid input! "
-                            + "Please enter a valid number.");
-                }
-            }
+            case "3" -> user.setAge(InputValidator.getValidAge(scanner));
+
             case "4" -> {
-                System.out.println(
-                        "Enter your Gender (MALE, FEMALE, OTHER):");
-                Gender gender;
-
-                while (true) {
-                    try {
-                        gender = Gender.valueOf(
-                                scanner.nextLine().toUpperCase());
-                        break;
-
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Invalid gender! Please enter "
-                                + "exactly MALE, FEMALE, or OTHER:");
-                    }
-                }
+                Gender gender = InputValidator.getValidGenderFromConsole(scanner);
                 user.setGender(gender);
             }
             case "5" -> {
@@ -206,10 +178,8 @@ public final class UserMenu {
                         scanner, userService);
                 user.setEmail(email);
             }
-            case "6" -> {
-                System.out.println("Enter new Password ");
-                user.setPassword(scanner.nextLine());
-            }
+            case "6" -> user.setPassword(InputValidator.getValidPassword(scanner));
+
             case "0" -> System.out.println("Editing cancelled.");
             default -> System.out.println("Invalid option!");
         }

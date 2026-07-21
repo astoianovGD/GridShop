@@ -170,7 +170,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should handle NumberFormatException when entering invalid price format for higher-than filter")
     void testHandleFiltering_PriceHigher_InvalidFormat() {
-        Scanner scanner = new Scanner("2\nabc\n");
+        // Flow: 2 (Price higher than) -> "abc" (invalid) -> "100" (valid price to break validator loop)
+        Scanner scanner = new Scanner("2\nabc\n100\n");
         catalogMenu.handleOptions("2", scanner);
         assertTrue(outContent.toString().contains("Invalid price format! Please enter a valid number."));
     }
@@ -192,7 +193,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should handle NumberFormatException for lower-than filter")
     void testHandleFiltering_PriceLower_InvalidFormat() {
-        Scanner scanner = new Scanner("3\nxyz\n");
+        // Flow: 3 (Price lower than) -> "xyz" (invalid) -> "50" (valid price to break validator loop)
+        Scanner scanner = new Scanner("3\nxyz\n50\n");
         catalogMenu.handleOptions("2", scanner);
         assertTrue(outContent.toString().contains("Invalid price format! Please enter a valid number."));
     }
@@ -230,4 +232,5 @@ class CatalogMenuTest {
 
         assertTrue(outContent.toString().contains("No products match your keyword."));
     }
+
 }

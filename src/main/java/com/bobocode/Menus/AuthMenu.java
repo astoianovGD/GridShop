@@ -7,6 +7,7 @@ import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.User.AuthService;
 import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
+import com.bobocode.Utility.InputValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -82,34 +83,18 @@ public final class AuthMenu {
     private User createNewUserFromConsole(final Scanner scanner) {
         System.out.println("--- User Registration ---");
 
-        System.out.println("Enter your First Name: ");
-        String firstName = scanner.nextLine();
+        String firstName = InputValidator.getValidName(scanner, "First Name");
 
-        System.out.println("Enter your Last Name: ");
-        String lastName = scanner.nextLine();
+        String lastName = InputValidator.getValidName(scanner, "Last Name");
 
         String email = EmailValidator.getUniqueEmailFromConsole(
                 scanner, userService);
 
-        System.out.println("Enter your Password: ");
-        String password = scanner.nextLine();
+        String password = InputValidator.getValidPassword(scanner);
 
-        System.out.println("Enter your Age : ");
-        int age = Integer.parseInt(scanner.nextLine());
+        int age = InputValidator.getValidAge(scanner);
 
-        System.out.println("Enter your Gender (MALE, FEMALE, OTHER):");
-        Gender gender;
-
-        while (true) {
-            try {
-                gender = Gender.valueOf(scanner.nextLine().toUpperCase());
-                break;
-
-            } catch (IllegalArgumentException e) {
-                System.out.println("Invalid gender! Please enter exactly "
-                        + "MALE, FEMALE, or OTHER:");
-            }
-        }
+        Gender gender = InputValidator.getValidGenderFromConsole(scanner);
 
         User user = new User();
         user.setFirstName(firstName);

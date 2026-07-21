@@ -4,6 +4,7 @@ import com.bobocode.Entities.Products.Product;
 import com.bobocode.Services.Products.FilterProductsService;
 import com.bobocode.Services.Products.MarketPlaceService;
 import com.bobocode.Services.Products.SortProductsService;
+import com.bobocode.Utility.InputValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -101,30 +102,16 @@ public final class CatalogMenu {
                         marketPlaceService.getAllProducts());
             }
             case "2" -> {
-                System.out.println("Enter minimum price:");
-                try {
-                    BigDecimal minPrice = new BigDecimal(scanner.nextLine());
-                    yield filterProductsService.filterProductsByPriceHigherThan(
-                            minPrice,
-                            marketPlaceService.getAllProducts());
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid price format! "
-                            + "Please enter a valid number.");
-                    yield List.of();
-                }
+                BigDecimal minPrice = InputValidator.getValidPrice(scanner, "Enter minimum price:");
+                yield filterProductsService.filterProductsByPriceHigherThan(
+                        minPrice,
+                        marketPlaceService.getAllProducts());
             }
             case "3" -> {
-                System.out.println("Enter maximum price:");
-                try {
-                    BigDecimal maxPrice = new BigDecimal(scanner.nextLine());
-                    yield filterProductsService.filterProductsByPriceLowerThan(
-                            maxPrice,
-                            marketPlaceService.getAllProducts());
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid price format! "
-                            + "Please enter a valid number.");
-                    yield List.of();
-                }
+                BigDecimal maxPrice = InputValidator.getValidPrice(scanner, "Enter maximum price:");
+                yield filterProductsService.filterProductsByPriceLowerThan(
+                        maxPrice,
+                        marketPlaceService.getAllProducts());
             }
             default -> {
                 System.out.println("Invalid filter option.");

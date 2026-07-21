@@ -5,6 +5,7 @@ import com.bobocode.Entities.Users.User;
 import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.Products.BucketService;
 import com.bobocode.Services.Products.MarketPlaceService;
+import com.bobocode.Utility.InputValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -60,16 +61,12 @@ public final class BucketMenu {
                     return;
                 }
                 case "2" -> {
-                    System.out.println("Enter Product ID to remove:");
                     try {
-                        long id = Long.parseLong(scanner.nextLine());
+                        long id = InputValidator.getValidId(scanner, "Enter Product ID to remove:");
                         Product product = marketPlaceService.getProductById(id);
                         bucketService.removeProductFromBucket(
                                 user.getBucket(), product);
                         System.out.println("Product successfully removed!");
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid ID format! "
-                                + "Please enter a number.");
                     } catch (EntityNotFoundException e) {
                         System.out.println(e.getMessage());
                     }
