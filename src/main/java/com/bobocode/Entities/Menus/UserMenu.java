@@ -3,7 +3,6 @@ package com.bobocode.Entities.Menus;
 import com.bobocode.Entities.Products.Product;
 import com.bobocode.Entities.Users.User;
 import com.bobocode.Enums.Gender;
-import com.bobocode.Exceptions.EmailAlreadyExistsException;
 import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.Products.BucketService;
 import com.bobocode.Services.Products.MarketPlaceService;

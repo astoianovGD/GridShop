@@ -21,7 +21,4 @@ public class BucketService {
         return bucket.getProductsInBucket();
     }
 
-    public void clearBucket(Bucket bucket) {
-        bucket.getProductsInBucket().clear();
-    }
 }

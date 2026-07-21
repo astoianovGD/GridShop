@@ -1,7 +1,6 @@
 package com.bobocode.Services.User;
 
 import com.bobocode.Entities.Users.AbstractUser;
-import com.bobocode.Entities.Users.Staff;
 import com.bobocode.Entities.Users.User;
 import com.bobocode.Exceptions.EmailAlreadyExistsException;
 import com.bobocode.Exceptions.EntityNotFoundException;
