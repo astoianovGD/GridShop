@@ -1,4 +1,4 @@
-package com.bobocode.Entities.Menus;
+package com.bobocode.Menus;
 
 import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Entities.Users.User;

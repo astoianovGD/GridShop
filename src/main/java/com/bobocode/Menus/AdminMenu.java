@@ -1,4 +1,4 @@
-package com.bobocode.Entities.Menus;
+package com.bobocode.Menus;
 
 import com.bobocode.Entities.Users.Staff;
 import com.bobocode.Exceptions.EntityNotFoundException;
