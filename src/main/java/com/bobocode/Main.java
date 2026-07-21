@@ -5,45 +5,87 @@ import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Entities.Users.Admin;
 import com.bobocode.Entities.Users.Staff;
 import com.bobocode.Entities.Users.User;
-import com.bobocode.Menus.*;
-import com.bobocode.Services.Products.*;
-import com.bobocode.Services.User.*;
+
+import com.bobocode.Menus.AdminMenu;
+import com.bobocode.Menus.AuthMenu;
+import com.bobocode.Menus.BucketMenu;
+import com.bobocode.Menus.CatalogMenu;
+import com.bobocode.Menus.StaffMenu;
+import com.bobocode.Menus.UserMenu;
+
+import com.bobocode.Services.Products.BucketService;
+import com.bobocode.Services.Products.FilterProductsService;
+import com.bobocode.Services.Products.MarketPlaceService;
+import com.bobocode.Services.Products.SortProductsService;
+
+import com.bobocode.Services.User.AuthService;
+import com.bobocode.Services.User.StaffService;
+import com.bobocode.Services.User.UserConsoleViewService;
+import com.bobocode.Services.User.UserService;
+
 import com.bobocode.Utility.EmailValidator;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class Main {
+/**
+ * Main application class.
+ */
+public final class Main {
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+    /**
+     * Private constructor to prevent instantiation of utility class.
+     */
+    private Main() {
+    }
+
+    /**
+     * The main entry point of the application.
+     *
+     * @param args the command line arguments
+     */
+    public static void main(final String[] args) {
+        Scanner scanner = new Scanner(
+                System.in, java.nio.charset.StandardCharsets.UTF_8
+        );
 
         MarketPlace marketPlace = new MarketPlace();
         Map<Long, AbstractUser> allUsers = new LinkedHashMap<>();
 
-
         UserService userService = new UserService(allUsers);
         StaffService staffService = new StaffService(allUsers);
-        MarketPlaceService marketPlaceService = new MarketPlaceService(marketPlace);
+        MarketPlaceService marketPlaceService =
+                new MarketPlaceService(marketPlace);
         BucketService bucketService = new BucketService();
-        FilterProductsService filterProductsService = new FilterProductsService();
+        FilterProductsService filterProductsService =
+                new FilterProductsService();
         SortProductsService sortProductsService = new SortProductsService();
         AuthService authService = new AuthService(allUsers);
-        UserConsoleViewService userConsoleViewService = new UserConsoleViewService();
+        UserConsoleViewService userConsoleViewService =
+                new UserConsoleViewService();
 
         AuthMenu authMenu = new AuthMenu(authService, userService);
         AdminMenu adminMenu = new AdminMenu(staffService, userService);
 
-        CatalogMenu catalogMenu = new CatalogMenu(marketPlaceService, filterProductsService, sortProductsService);
-        StaffMenu staffMenu = new StaffMenu(userService, marketPlaceService, catalogMenu, userConsoleViewService);
-        BucketMenu bucketMenu = new BucketMenu(bucketService, marketPlaceService, catalogMenu);
-        UserMenu userMenu = new UserMenu(userService,bucketService,marketPlaceService,catalogMenu,userConsoleViewService,bucketMenu);
 
+        CatalogMenu catalogMenu = new CatalogMenu(
+                marketPlaceService, filterProductsService, sortProductsService);
+
+        StaffMenu staffMenu = new StaffMenu(
+                userService, marketPlaceService, catalogMenu,
+                userConsoleViewService);
+
+        BucketMenu bucketMenu = new BucketMenu(
+                bucketService, marketPlaceService, catalogMenu);
+
+        UserMenu userMenu = new UserMenu(
+                userService, bucketService, marketPlaceService,
+                catalogMenu, userConsoleViewService, bucketMenu);
 
         System.out.println("--- SYSTEM SETUP: CREATE FIRST ADMIN ---");
         Admin firstAdmin = new Admin();
-        firstAdmin.setId(AbstractUser.globalIdCounter++);
+        firstAdmin.setId(AbstractUser.generateNextId());
 
         System.out.println("Enter first name: ");
         firstAdmin.setFirstName(scanner.nextLine());
@@ -69,11 +111,9 @@ public class Main {
 
             if (loggedInUser instanceof Admin) {
                 adminMenu.menu(scanner);
-            }
-            else if (loggedInUser instanceof Staff) {
+            } else if (loggedInUser instanceof Staff) {
                 staffMenu.menu(scanner);
-            }
-            else if (loggedInUser instanceof User user) {
+            } else if (loggedInUser instanceof User user) {
                 userMenu.menu(user, scanner);
             }
         }

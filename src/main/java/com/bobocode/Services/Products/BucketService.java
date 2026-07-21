@@ -2,22 +2,43 @@ package com.bobocode.Services.Products;
 
 import com.bobocode.Entities.Products.Bucket;
 import com.bobocode.Entities.Products.Product;
-import com.bobocode.Entities.Users.User;
 
 import java.util.List;
-import java.util.Scanner;
 
-public class BucketService {
+/**
+ * Service for managing user buckets.
+ */
+public final class BucketService {
 
-    public void addProductToBucket(Bucket bucket, Product product) {
+    /**
+     * Adds a product to the specified bucket.
+     *
+     * @param bucket  the bucket to add the product to
+     * @param product the product to be added
+     */
+    public void addProductToBucket(
+            final Bucket bucket, final Product product) {
         bucket.getProductsInBucket().add(product);
     }
 
-    public void removeProductFromBucket(Bucket bucket, Product product) {
+    /**
+     * Removes a product from the specified bucket.
+     *
+     * @param bucket  the bucket to remove the product from
+     * @param product the product to be removed
+     */
+    public void removeProductFromBucket(
+            final Bucket bucket, final Product product) {
         bucket.getProductsInBucket().remove(product);
     }
 
-    public List<Product> getProductsFromBucket(Bucket bucket) {
+    /**
+     * Retrieves the list of products from the specified bucket.
+     *
+     * @param bucket the bucket to retrieve products from
+     * @return a list of products currently in the bucket
+     */
+    public List<Product> getProductsFromBucket(final Bucket bucket) {
         return bucket.getProductsInBucket();
     }
 

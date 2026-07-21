@@ -9,22 +9,46 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
 
+/**
+ * Menu for managing the user's shopping bucket.
+ */
 @RequiredArgsConstructor
-public class BucketMenu {
+public final class BucketMenu {
+
+    /**
+     * Service for handling bucket operations.
+     */
     private final BucketService bucketService;
+
+    /**
+     * Service for marketplace interactions.
+     */
     private final MarketPlaceService marketPlaceService;
+
+    /**
+     * Menu for displaying product catalog.
+     */
     private final CatalogMenu catalogMenu;
 
-    public void handleBucket(User user, Scanner scanner) {
+    /**
+     * Handles user interaction for bucket operations.
+     *
+     * @param user    the current authenticated user
+     * @param scanner the scanner for console input
+     */
+    public void handleBucket(final User user, final Scanner scanner) {
         while (true) {
             if (user.getBucket().getProductsInBucket().isEmpty()) {
-                System.out.println("\nYour bucket is empty! Add some products first.");
+                System.out.println("\nYour bucket is empty! "
+                        + "Add some products first.");
                 return;
             }
-            //exception 400
-            catalogMenu.catalogAllProducts(user.getBucket().getProductsInBucket());
+            // exception 400
+            catalogMenu.catalogAllProducts(
+                    user.getBucket().getProductsInBucket());
 
-            System.out.println("\n1) Purchase Items \n2) Remove Item \n0) Go Back");
+            System.out.println("\n1) Purchase Items \n2) Remove Item "
+                    + "\n0) Go Back");
             switch (scanner.nextLine()) {
                 case "1" -> {
                     checkout(scanner, user);
@@ -35,26 +59,38 @@ public class BucketMenu {
                     try {
                         long id = Long.parseLong(scanner.nextLine());
                         Product product = marketPlaceService.getProductById(id);
-                        bucketService.removeProductFromBucket(user.getBucket(), product);
+                        bucketService.removeProductFromBucket(
+                                user.getBucket(), product);
                         System.out.println("Product successfully removed!");
                     } catch (NumberFormatException e) {
-                        System.out.println("Invalid ID format! Please enter a number.");
+                        System.out.println("Invalid ID format! "
+                                + "Please enter a number.");
                     } catch (EntityNotFoundException e) {
                         System.out.println(e.getMessage());
                     }
                 }
-                case "0" -> { return; }
+                case "0" -> {
+                    return;
+                }
                 default -> System.out.println("Invalid option!");
             }
         }
     }
 
-    private void checkout(Scanner scanner, User user) {
-        if (bucketService.getProductsFromBucket(user.getBucket()).isEmpty()) {
-            System.out.println("Your bucket is empty! Add some products first.");
+    /**
+     * Processes the checkout for the user's bucket.
+     *
+     * @param scanner the scanner for console input
+     * @param user    the user performing the checkout
+     */
+    private void checkout(final Scanner scanner, final User user) {
+        if (bucketService.getProductsFromBucket(
+                user.getBucket()).isEmpty()) {
+            System.out.println("Your bucket is empty! "
+                    + "Add some products first.");
             return;
         }
-        //exception 4й00
+        // exception 400
 
         System.out.println("Enter your card number:");
         scanner.nextLine();
@@ -65,7 +101,7 @@ public class BucketMenu {
 
         user.getPurchaseHistory().add(user.getBucket());
 
-        //give user new bucket to save purchase history
+        // give user new bucket to save purchase history
         user.setBucket(new com.bobocode.Entities.Products.Bucket());
     }
 }

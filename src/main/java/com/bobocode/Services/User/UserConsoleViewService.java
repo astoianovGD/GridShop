@@ -8,10 +8,18 @@ import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Service for displaying user information in the console.
+ */
 @RequiredArgsConstructor
-public class UserConsoleViewService {
+public final class UserConsoleViewService {
 
-    public void printUserProfile(User user) {
+    /**
+     * Prints the profile of the specified user.
+     *
+     * @param user the user whose profile is to be printed
+     */
+    public void printUserProfile(final User user) {
         String fullName = user.getFirstName() + " " + user.getLastName();
 
         System.out.println("\n+--------------------------------------+");
@@ -24,7 +32,12 @@ public class UserConsoleViewService {
         System.out.println("+--------------------------------------+\n");
     }
 
-    public void printUserPurchaseHistory(User user) {
+    /**
+     * Prints the purchase history of the specified user.
+     *
+     * @param user the user whose purchase history is to be printed
+     */
+    public void printUserPurchaseHistory(final User user) {
         List<Bucket> history = user.getPurchaseHistory();
 
         if (history == null || history.isEmpty()) {
@@ -40,7 +53,8 @@ public class UserConsoleViewService {
             BigDecimal totalAmount = BigDecimal.ZERO;
 
             for (Product product : bucket.getProductsInBucket()) {
-                System.out.printf("- %-15s | $%5.2f%n", product.getName(), product.getPrice());
+                System.out.printf("- %-15s | $%5.2f%n",
+                        product.getName(), product.getPrice());
                 totalAmount = totalAmount.add(product.getPrice());
             }
 

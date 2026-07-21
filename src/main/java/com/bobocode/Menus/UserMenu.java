@@ -13,66 +13,45 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
 
-
+/**
+ * Menu for user operations.
+ */
 @RequiredArgsConstructor
-public class UserMenu {
+public final class UserMenu {
+
+    /** The user service. */
     private final UserService userService;
+
+    /** The bucket service. */
     private final BucketService bucketService;
+
+    /** The marketplace service. */
     private final MarketPlaceService marketPlaceService;
+
+    /** The catalog menu. */
     private final CatalogMenu catalogMenu;
+
+    /** The user console view service. */
     private final UserConsoleViewService userConsoleViewService;
+
+    /** The bucket menu. */
     private final BucketMenu bucketMenu;
 
-    public void menu(User user, Scanner scanner) {
+    /**
+     * Displays the user menu and handles user input.
+     *
+     * @param user    the current user
+     * @param scanner the scanner for input
+     */
+    public void menu(final User user, final Scanner scanner) {
         while (true) {
             System.out.println("\n--- User Menu ---");
-            System.out.println("1) Browse Products \n2) View Personal Data \n3) View Bucket \n4) Delete Account \n0) Sign Out");
+            System.out.println("1) Browse Products \n"
+                    + "2) View Personal Data \n"
+                    + "3) View Bucket \n4) Delete Account \n0) Sign Out");
             switch (scanner.nextLine()) {
-                case "1" -> {
-                    catalogMenu.catalogAllProducts(marketPlaceService.getAllProducts());
-
-                    while (true) {
-                        System.out.println("Wanna do anything else?");
-                        System.out.println("1) Sort \n2) Filter \n3) Search \n4) Add to Bucket \n0) Nothing");
-                        String option = scanner.nextLine();
-                        if ("0".equals(option)) break;
-
-                        switch (option) {
-                            case "1", "2", "3" -> catalogMenu.handleOptions(option, scanner);
-                            case "4" -> {
-                                System.out.println("Enter id of product to add to Bucket: ");
-                                try {
-                                    long id = Long.parseLong(scanner.nextLine());
-                                    Product productToAdd = marketPlaceService.getProductById(id);
-                                    bucketService.addProductToBucket(user.getBucket(), productToAdd);
-                                    System.out.println("Product added to bucket!");
-                                } catch (NumberFormatException e) {
-                                    System.out.println("Invalid ID format! Please enter a number.");
-                                } catch (EntityNotFoundException e) {
-                                    System.out.println(e.getMessage());
-                                }
-                            }
-                            default -> System.out.println("Invalid option!");
-                        }
-                    }
-                }
-                case "2" -> {
-                    userConsoleViewService.printUserProfile(user);
-
-                    while (true) {
-                        System.out.println("\nWanna do anything else?");
-                        System.out.println("1) Edit profile \n2) See Purchase History \n0) Nothing");
-
-                        String option = scanner.nextLine();
-                        if (option.equals("0")) break;
-                        switch (option) {
-                            case "1" -> editUserProfile(scanner, user);
-                            case "2" -> userConsoleViewService.printUserPurchaseHistory(user);
-                            default -> System.out.println("Invalid option!");
-                        }
-                    }
-
-                }
+                case "1" -> handleBrowseProducts(user, scanner);
+                case "2" -> handleViewPersonalData(user, scanner);
                 case "3" -> bucketMenu.handleBucket(user, scanner);
                 case "4" -> {
                     System.out.println("Are you sure? Y/N");
@@ -86,16 +65,93 @@ public class UserMenu {
                     return;
                 }
                 default -> System.out.println("Invalid option!");
-                //400
             }
         }
-
     }
 
-    private void editUserProfile(Scanner scanner, User user) {
+    /**
+     * Handles the browse products menu option.
+     *
+     * @param user    the current user
+     * @param scanner the scanner for input
+     */
+    private void handleBrowseProducts(final User user, final Scanner scanner) {
+        catalogMenu.catalogAllProducts(
+                marketPlaceService.getAllProducts());
+
+        while (true) {
+            System.out.println("Wanna do anything else?");
+            System.out.println("1) Sort \n2) Filter \n3) Search \n"
+                    + "4) Add to Bucket \n0) Nothing");
+            String option = scanner.nextLine();
+            if ("0".equals(option)) {
+                break;
+            }
+
+            switch (option) {
+                case "1", "2", "3" -> catalogMenu.handleOptions(
+                        option, scanner);
+                case "4" -> {
+                    System.out.println("Enter id of product to "
+                            + "add to Bucket: ");
+                    try {
+                        long id = Long.parseLong(scanner.nextLine());
+                        Product productToAdd = marketPlaceService
+                                .getProductById(id);
+                        bucketService.addProductToBucket(
+                                user.getBucket(), productToAdd);
+                        System.out.println("Product added to bucket!");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid ID format! "
+                                + "Please enter a number.");
+                    } catch (EntityNotFoundException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+                default -> System.out.println("Invalid option!");
+            }
+        }
+    }
+
+    /**
+     * Handles the view personal data menu option.
+     *
+     * @param user    the current user
+     * @param scanner the scanner for input
+     */
+    private void handleViewPersonalData(
+            final User user, final Scanner scanner) {
+        userConsoleViewService.printUserProfile(user);
+
+        while (true) {
+            System.out.println("\nWanna do anything else?");
+            System.out.println("1) Edit profile \n"
+                    + "2) See Purchase History \n0) Nothing");
+
+            String option = scanner.nextLine();
+            if ("0".equals(option)) {
+                break;
+            }
+            switch (option) {
+                case "1" -> editUserProfile(scanner, user);
+                case "2" -> userConsoleViewService
+                        .printUserPurchaseHistory(user);
+                default -> System.out.println("Invalid option!");
+            }
+        }
+    }
+
+    /**
+     * Edits the user profile based on console input.
+     *
+     * @param scanner the scanner for input
+     * @param user    the user whose profile is to be edited
+     */
+    private void editUserProfile(final Scanner scanner, final User user) {
         System.out.println("\n--- Edit Profile ---");
         System.out.println("Select field to change:");
-        System.out.println("1) First Name \n2) Last Name \n3) Age \n4) Gender \n5) Email \n6) Password\n0) Cancel");
+        System.out.println("1) First Name \n2) Last Name \n3) Age \n"
+                + "4) Gender \n5) Email \n6) Password\n0) Cancel");
 
         String option = scanner.nextLine();
 
@@ -116,26 +172,31 @@ public class UserMenu {
                     user.setAge(Integer.parseInt(scanner.nextLine()));
                     System.out.println("Age updated!");
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid input! Please enter a valid number.");
+                    System.out.println("Invalid input! "
+                            + "Please enter a valid number.");
                 }
             }
             case "4" -> {
-                System.out.println("Enter your Gender (MALE, FEMALE, OTHER):");
+                System.out.println(
+                        "Enter your Gender (MALE, FEMALE, OTHER):");
                 Gender gender;
 
                 while (true) {
                     try {
-                        gender = Gender.valueOf(scanner.nextLine().toUpperCase());
+                        gender = Gender.valueOf(
+                                scanner.nextLine().toUpperCase());
                         break;
 
                     } catch (IllegalArgumentException e) {
-                        System.out.println("Invalid gender! Please enter exactly MALE, FEMALE, or OTHER:");
+                        System.out.println("Invalid gender! Please enter "
+                                + "exactly MALE, FEMALE, or OTHER:");
                     }
                 }
                 user.setGender(gender);
             }
             case "5" -> {
-                String email = EmailValidator.getUniqueEmailFromConsole(scanner, userService);
+                String email = EmailValidator.getUniqueEmailFromConsole(
+                        scanner, userService);
                 user.setEmail(email);
             }
             case "6" -> {
@@ -144,7 +205,6 @@ public class UserMenu {
             }
             case "0" -> System.out.println("Editing cancelled.");
             default -> System.out.println("Invalid option!");
-            //400
         }
 
         userService.editPersonalInformation(user.getId(), user);
