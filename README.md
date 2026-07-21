@@ -1,26 +1,37 @@
 # 🛍️ GridShop Console Marketplace
 
-GridShop is a Java console application that simulates a simple online marketplace with role-based access control. The project demonstrates object-oriented programming principles, layered architecture, authentication, CRUD operations, and collection manipulation without using a database.
+GridShop is a Java console application that simulates an online marketplace with **role-based access control**. The project demonstrates object-oriented programming, layered architecture, authentication, CRUD operations, custom exception handling, and unit testing.
 
-## Features
+The application is designed to showcase Java Core skills without using a database or external frameworks such as Spring.
 
-### Authentication
+---
+
+# ✨ Features
+
+## 🔐 Authentication
+
 - Sign In
 - User Registration
 - Email format validation
 - Unique email validation
 
-### Admin
+---
+
+## 👑 Admin
+
 - View all staff members
-- Add new staff
+- Add new staff members
 - Edit staff information
 - Remove staff members
 
-### Staff
+---
+
+## 👨‍💼 Staff
+
+- Browse marketplace products
 - Add products
 - Edit products
 - Remove products
-- Browse products
 - Sort products
 - Filter products
 - Search products
@@ -28,8 +39,11 @@ GridShop is a Java console application that simulates a simple online marketplac
 - View users' shopping carts
 - View users' purchase history
 
-### User
-- Browse products
+---
+
+## 👤 User
+
+- Browse marketplace products
 - Sort products
 - Filter products
 - Search products
@@ -37,49 +51,61 @@ GridShop is a Java console application that simulates a simple online marketplac
 - Remove products from shopping cart
 - Purchase products
 - View purchase history
-- Edit personal profile
+- Edit personal information
 - Delete account
 
 ---
 
-## Product Operations
+# 🛒 Product Operations
 
-Products can be:
+Products support:
 
-- Sorted by price (ascending / descending)
-- Sorted alphabetically (A-Z / Z-A)
-- Filtered by:
-    - First letter
-    - Minimum price
-    - Maximum price
-- Searched by name
+- Sorting by price (Ascending / Descending)
+- Sorting alphabetically (A-Z / Z-A)
+- Filtering by:
+  - First letter
+  - Minimum price
+  - Maximum price
+- Searching by product name
 
 ---
 
-## Project Structure
+# 🏗️ Project Structure
 
 ```
 src
-├── Entities
-│   ├── Menus
-│   ├── Products
-│   └── Users
+├── main
+│   └── java
+│       └── com.bobocode
+│           ├── Entities
+│           │   ├── Menus
+│           │   ├── Products
+│           │   └── Users
+│           │
+│           ├── Services
+│           │   ├── Products
+│           │   └── User
+│           │
+│           ├── Utility
+│           ├── Exceptions
+│           ├── Enums
+│           └── Main.java
 │
-├── Services
-│   ├── Products
-│   └── User
-│
-├── Utility
-├── Exceptions
-├── Enums
-└── Main.java
+└── test
+    └── java
+        └── com.bobocode
+            ├── Entities
+            ├── Menus
+            ├── Services
+            ├── Utility
+            └── MainTest.java
 ```
 
 ---
 
-## Architecture
+# 🏛️ Architecture
 
-The application follows a layered architecture:
+The project follows a classic layered architecture.
 
 ```
 Console (Menus)
@@ -91,28 +117,83 @@ Business Logic (Services)
 Entities (Models)
 ```
 
-### Layer Responsibilities
+### Responsibilities
 
-- **Menus** – user interaction.
-- **Services** – business logic.
-- **Entities** – application models.
-- **Utility** – helper classes.
-- **Exceptions** – custom exception handling.
+### Menus
+Responsible for user interaction through the console.
+
+### Services
+Contain the application's business logic.
+
+### Entities
+Represent domain models and application data.
+
+### Utility
+Helper and validation classes.
+
+### Exceptions
+Custom exceptions for error handling.
 
 ---
 
-## Technologies
+# 🧪 Testing
 
-- Java 17+
+The project includes comprehensive **unit testing** using **JUnit 5** and **Mockito**.
+
+### Tested Components
+
+- Product Services
+- User Services
+- Authentication
+- Utility classes
+- Entity models
+- Console menus
+- Main class
+
+### Test Coverage Includes
+
+- Business logic
+- CRUD operations
+- Authentication
+- Product filtering
+- Product sorting
+- User management
+- Email validation
+- Exception handling
+
+---
+
+# 🛠️ Technologies
+
+### Core
+
+- Java 21
 - Maven
 - Lombok
-- Java Collections Framework
+
+### Testing
+
+- JUnit 5
+- Mockito
+- JaCoCo
+
+### Code Quality
+
+- Checkstyle
+- PMD
+- SpotBugs
+- FindSecBugs
+
+### Java Features
+
 - Stream API
+- Collections Framework
 - BigDecimal
+- Custom Exceptions
 
 ---
 
-## Validation
+# ✅ Validation
 
 The application validates:
 
@@ -125,9 +206,9 @@ The application validates:
 
 ---
 
-## Default Marketplace
+# 📦 Default Marketplace
 
-The application starts with two predefined products:
+The application starts with two predefined products.
 
 | Product | Price |
 |---------|------:|
@@ -136,56 +217,82 @@ The application starts with two predefined products:
 
 ---
 
-## How to Run
+# 🚀 Getting Started
 
-Clone the repository:
+## Clone the repository
 
 ```bash
 git clone https://github.com/your-username/GridShop.git
 ```
 
-Open the project in IntelliJ IDEA (or any Java IDE).
+## Open the project
 
-Run:
+Open the project using **IntelliJ IDEA** (or any Java IDE with Maven support).
+
+## Build the project
+
+```bash
+mvn clean install
+```
+
+## Run the application
+
+Run
 
 ```
 Main.java
 ```
 
+or
+
+```bash
+mvn exec:java
+```
+
+(if the Maven Exec Plugin is configured)
+
 ---
 
-## Design Principles
+# 📖 Design Principles
 
 This project demonstrates:
 
 - Object-Oriented Programming (OOP)
+- Encapsulation
 - Separation of Concerns
 - Single Responsibility Principle (SRP)
 - Layered Architecture
-- Encapsulation
+- Dependency Injection (manual)
 - Custom Exception Handling
-- Java Stream API
+- Stream API
+- Clean Code principles
 
 ---
 
-## Future Improvements
+# 🔮 Future Improvements
+
+Possible future enhancements include:
 
 - PostgreSQL integration
-- Spring Boot
-- Hibernate / JPA
+- Spring Boot migration
+- Spring Data JPA
+- Hibernate ORM
 - REST API
 - JWT Authentication
-- Password hashing
-- Product categories
+- Password hashing (BCrypt)
 - Shopping cart quantities
-- Order entity instead of Bucket history
+- Product categories
 - Inventory management
-- Unit testing (JUnit & Mockito)
+- Order entity instead of Bucket purchase history
 - Docker support
+- Logging (SLF4J + Logback)
+- Pagination
+- Product images
+- CI/CD pipeline with GitHub Actions
 
 ---
 
-## Author
+# 👨‍💻 Author
 
 **Aleksei Stoianov**
 

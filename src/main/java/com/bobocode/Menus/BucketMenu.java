@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 /**
  * Menu for managing the user's shopping bucket.
@@ -95,9 +96,17 @@ public final class BucketMenu {
             return;
         }
         // exception 400
+        Pattern cardPattern = Pattern.compile("^\\d{16}$");
 
-        System.out.println("Enter your card number:");
-        scanner.nextLine();
+        while (true) {
+            System.out.println("Enter your card number:");
+            String input = scanner.nextLine().replaceAll("\\s+", "");
+
+            if (cardPattern.matcher(input).matches()) {
+                break;
+            }
+            System.out.println("Bad card format try (**** **** **** ****, or without spaces)");
+        }
 
         System.out.println("Processing...");
         System.out.println("Debiting of funds...");
