@@ -2,6 +2,7 @@ package com.bobocode.Services.User;
 
 import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Exceptions.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
 public final class AuthService {
 
     /** A map of all registered users. */
+    @NonNull
     private final Map<Long, AbstractUser> allUsers;
 
     /**

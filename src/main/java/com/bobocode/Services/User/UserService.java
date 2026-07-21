@@ -4,6 +4,7 @@ import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Entities.Users.User;
 import com.bobocode.Exceptions.EmailAlreadyExistsException;
 import com.bobocode.Exceptions.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Map;
 public final class UserService {
 
     /** Map storing all registered users in the system. */
+    @NonNull
     private final Map<Long, AbstractUser> allUsers;
 
     /**

@@ -4,6 +4,7 @@ import com.bobocode.Entities.Products.Product;
 import com.bobocode.Services.Products.FilterProductsService;
 import com.bobocode.Services.Products.MarketPlaceService;
 import com.bobocode.Services.Products.SortProductsService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
@@ -17,12 +18,15 @@ import java.util.Scanner;
 public final class CatalogMenu {
 
     /** Service for interacting with marketplace products. */
+    @NonNull
     private final MarketPlaceService marketPlaceService;
 
     /** Service for filtering products. */
+    @NonNull
     private final FilterProductsService filterProductsService;
 
     /** Service for sorting products. */
+    @NonNull
     private final SortProductsService sortProductsService;
 
     /**

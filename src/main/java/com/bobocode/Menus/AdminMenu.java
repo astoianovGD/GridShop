@@ -5,6 +5,7 @@ import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.User.StaffService;
 import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
@@ -18,11 +19,13 @@ public final class AdminMenu {
     /**
      * Service for managing staff members.
      */
+    @NonNull
     private final StaffService staffService;
 
     /**
      * Service for managing users.
      */
+    @NonNull
     private final UserService userService;
 
     /**

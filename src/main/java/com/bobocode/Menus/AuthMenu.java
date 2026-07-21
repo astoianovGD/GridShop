@@ -7,6 +7,7 @@ import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.User.AuthService;
 import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
@@ -20,11 +21,13 @@ public final class AuthMenu {
     /**
      * Service for handling sign-in logic.
      */
+    @NonNull
     private final AuthService authService;
 
     /**
      * Service for managing users.
      */
+    @NonNull
     private final UserService userService;
 
     /**

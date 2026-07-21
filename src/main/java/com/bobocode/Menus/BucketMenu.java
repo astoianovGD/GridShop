@@ -5,6 +5,7 @@ import com.bobocode.Entities.Users.User;
 import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.Products.BucketService;
 import com.bobocode.Services.Products.MarketPlaceService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
@@ -18,16 +19,19 @@ public final class BucketMenu {
     /**
      * Service for handling bucket operations.
      */
+    @NonNull
     private final BucketService bucketService;
 
     /**
      * Service for marketplace interactions.
      */
+    @NonNull
     private final MarketPlaceService marketPlaceService;
 
     /**
      * Menu for displaying product catalog.
      */
+    @NonNull
     private final CatalogMenu catalogMenu;
 
     /**

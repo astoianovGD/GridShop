@@ -9,6 +9,7 @@ import com.bobocode.Services.Products.MarketPlaceService;
 import com.bobocode.Services.User.UserConsoleViewService;
 import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
@@ -20,21 +21,27 @@ import java.util.Scanner;
 public final class UserMenu {
 
     /** The user service. */
+    @NonNull
     private final UserService userService;
 
     /** The bucket service. */
+    @NonNull
     private final BucketService bucketService;
 
     /** The marketplace service. */
+    @NonNull
     private final MarketPlaceService marketPlaceService;
 
     /** The catalog menu. */
+    @NonNull
     private final CatalogMenu catalogMenu;
 
     /** The user console view service. */
+    @NonNull
     private final UserConsoleViewService userConsoleViewService;
 
     /** The bucket menu. */
+    @NonNull
     private final BucketMenu bucketMenu;
 
     /**

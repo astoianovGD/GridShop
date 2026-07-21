@@ -6,6 +6,7 @@ import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.Products.MarketPlaceService;
 import com.bobocode.Services.User.UserConsoleViewService;
 import com.bobocode.Services.User.UserService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
@@ -18,15 +19,19 @@ import java.util.Scanner;
 public final class StaffMenu {
 
     /** The user service. */
+    @NonNull
     private final UserService userService;
 
     /** The marketplace service. */
+    @NonNull
     private final MarketPlaceService marketPlaceService;
 
     /** The catalog menu. */
+    @NonNull
     private final CatalogMenu catalogMenu;
 
     /** The user console view service. */
+    @NonNull
     private final UserConsoleViewService userConsoleViewService;
 
     /**

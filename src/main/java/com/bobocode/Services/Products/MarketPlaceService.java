@@ -3,6 +3,7 @@ package com.bobocode.Services.Products;
 import com.bobocode.Entities.Products.MarketPlace;
 import com.bobocode.Entities.Products.Product;
 import com.bobocode.Exceptions.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public final class MarketPlaceService {
     private static final long INITIAL_PRODUCT_ID = 3L;
 
     /** The marketplace entity containing the products. */
+    @NonNull
     private final MarketPlace marketPlace;
 
     /** Counter for assigning unique product IDs. */
