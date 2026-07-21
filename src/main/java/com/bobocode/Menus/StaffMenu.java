@@ -115,6 +115,7 @@ public final class StaffMenu {
         );
         try {
             marketPlaceService.removeProduct(id);
+
             System.out.println("Product successfully deleted!");
         } catch (EntityNotFoundException e) {
             System.out.println(e.getMessage());

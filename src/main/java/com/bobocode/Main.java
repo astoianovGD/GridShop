@@ -56,9 +56,11 @@ public final class Main {
 
         UserService userService = new UserService(allUsers);
         StaffService staffService = new StaffService(allUsers);
-        MarketPlaceService marketPlaceService =
-                new MarketPlaceService(marketPlace);
         BucketService bucketService = new BucketService();
+        MarketPlaceService marketPlaceService =
+                new MarketPlaceService(marketPlace,
+                        userService,
+                        bucketService);
         FilterProductsService filterProductsService =
                 new FilterProductsService();
         SortProductsService sortProductsService = new SortProductsService();

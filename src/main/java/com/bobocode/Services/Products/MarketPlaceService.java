@@ -2,7 +2,9 @@ package com.bobocode.Services.Products;
 
 import com.bobocode.Entities.Products.MarketPlace;
 import com.bobocode.Entities.Products.Product;
+import com.bobocode.Entities.Users.User;
 import com.bobocode.Exceptions.EntityNotFoundException;
+import com.bobocode.Services.User.UserService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,14 @@ public final class MarketPlaceService {
     /** The marketplace entity containing the products. */
     @NonNull
     private final MarketPlace marketPlace;
+
+    /** Service for managing users. */
+    @NonNull
+    private final UserService userService;
+
+    /** Service for handling bucket operations. */
+    @NonNull
+    private final BucketService bucketService;
 
     /** Counter for assigning unique product IDs. */
     private long productIdCounter = INITIAL_PRODUCT_ID;
@@ -47,6 +57,18 @@ public final class MarketPlaceService {
         if (removedProduct == null) {
             throw new EntityNotFoundException("Product with ID " + id
                     + " not found!");
+        }
+
+        List<User> affectedUsers = userService.getAllUsers().stream()
+                .filter(user -> user.getBucket() != null)
+                .filter(user -> user.getBucket().getProductsInBucket().contains(removedProduct))
+                .peek(user -> bucketService.removeProductFromBucket(
+                        user.getBucket(), removedProduct))
+                .toList();
+
+        if (!affectedUsers.isEmpty()) {
+            System.out.println("Product removed from buckets of the following users:");
+            affectedUsers.forEach(user -> System.out.println("- " + user));
         }
     }
 
