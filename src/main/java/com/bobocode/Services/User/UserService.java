@@ -1,14 +1,15 @@
 package com.bobocode.Services.User;
 
-import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Entities.Users.User;
+import com.bobocode.Enums.Gender;
 import com.bobocode.Exceptions.EmailAlreadyExistsException;
 import com.bobocode.Exceptions.EntityNotFoundException;
+import com.bobocode.Utility.JdbcTemplate;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Service class for managing standard users.
@@ -16,9 +17,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public final class UserService {
 
-    /** Map storing all registered users in the system. */
+    /** The JDBC template for database operations. */
     @NonNull
-    private final Map<Long, AbstractUser> allUsers;
+    private final JdbcTemplate jdbcTemplate;
 
     /**
      * Registers a new user in the system.
@@ -26,23 +27,51 @@ public final class UserService {
      * @param newUser the user to register
      */
     public void registerNewUser(final User newUser) {
-        newUser.setId(AbstractUser.generateNextId());
-        allUsers.put(newUser.getId(), newUser);
+        String insertUserSql =
+                "INSERT INTO users "
+                        + "(email, password, lastname, firstname, "
+                        + "age, gender, role_id) VALUES (?, ?, ?, ?, ?, ?, "
+                        + "(SELECT role_id FROM roles WHERE name = 'USER')) "
+                        + "RETURNING user_id";
+
+        String genderStr = newUser.getGender() != null
+                ? newUser.getGender().name()
+                : null;
+
+        Long userId = jdbcTemplate.findOne(insertUserSql, rs -> {
+                    try {
+                        return rs.getLong("user_id");
+                    } catch (SQLException e) {
+                        throw new RuntimeException(
+                                "Error getting user_id after registration", e
+                        );
+                    }
+                },
+                newUser.getEmail(),
+                newUser.getPassword(),
+                newUser.getLastName(),
+                newUser.getFirstName(),
+                newUser.getAge(),
+                genderStr
+        );
+
+        if (userId != null) {
+            String createBucketSql =
+                    "INSERT INTO bucket (user_id) VALUES (?)";
+            jdbcTemplate.execute(createBucketSql, userId);
+        }
     }
 
     /**
      * Deletes a user account by its ID.
      *
      * @param id the ID of the user to delete
-     * @throws IllegalArgumentException if the ID does not belong to a User
      */
     public void deleteUserAccount(final long id) {
-        if (allUsers.get(id) instanceof User) {
-            allUsers.remove(id);
-        } else {
-            throw new IllegalArgumentException(
-                    "Entity with this ID is not a User!");
-        }
+        getUserById(id);
+
+        String sql = "UPDATE users SET is_active = false WHERE user_id = ?";
+        jdbcTemplate.execute(sql, id);
     }
 
     /**
@@ -53,7 +82,25 @@ public final class UserService {
      */
     public void editPersonalInformation(
             final long id, final User changedUser) {
-        allUsers.put(id, changedUser);
+        getUserById(id);
+
+        String sql = "UPDATE users SET email = ?, password = ?, "
+                + "lastname = ?, firstname = ?, age = ?, gender = ? "
+                + "WHERE user_id = ?";
+
+        String genderStr = changedUser.getGender() != null
+                ? changedUser.getGender().name()
+                : null;
+
+        jdbcTemplate.execute(sql,
+                changedUser.getEmail(),
+                changedUser.getPassword(),
+                changedUser.getLastName(),
+                changedUser.getFirstName(),
+                changedUser.getAge(),
+                genderStr,
+                id
+        );
     }
 
     /**
@@ -62,10 +109,34 @@ public final class UserService {
      * @return a list containing all users
      */
     public List<User> getAllUsers() {
-        return allUsers.values().stream()
-                .filter(User.class::isInstance)
-                .map(User.class::cast)
-                .toList();
+        String sql = "SELECT u.user_id, u.email, u.password, "
+                + "u.lastname, u.firstname, u.age, u.gender, u.role_id "
+                + "FROM users u "
+                + "JOIN roles r ON u.role_id = r.role_id "
+                + "WHERE r.name = 'USER' AND u.is_active = true";
+
+        return jdbcTemplate.findMany(sql, rs -> {
+            try {
+                User u = new User();
+                u.setId(rs.getLong("user_id"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setLastName(rs.getString("lastname"));
+                u.setFirstName(rs.getString("firstname"));
+                u.setAge(rs.getInt("age"));
+
+                String genderStr = rs.getString("gender");
+                if (genderStr != null) {
+                    u.setGender(Gender.valueOf(genderStr));
+                }
+
+                return u;
+            } catch (SQLException e) {
+                throw new RuntimeException(
+                        "Error mapping User from ResultSet", e
+                );
+            }
+        });
     }
 
     /**
@@ -76,11 +147,44 @@ public final class UserService {
      * @throws EntityNotFoundException if the user is not found
      */
     public User getUserById(final long id) {
-        if (allUsers.get(id) instanceof User user) {
-            return user;
+        String sql = "SELECT user_id, email, password, "
+                + "lastname, firstname, age, gender, role_id "
+                + "FROM users "
+                + "WHERE user_id = ? "
+                + "AND role_id = "
+                + "(SELECT role_id FROM roles WHERE name = 'USER') "
+                + "AND is_active = true";
+
+        User user = jdbcTemplate.findOne(sql, rs -> {
+            try {
+                User u = new User();
+                u.setId(rs.getLong("user_id"));
+                u.setEmail(rs.getString("email"));
+                u.setPassword(rs.getString("password"));
+                u.setLastName(rs.getString("lastname"));
+                u.setFirstName(rs.getString("firstname"));
+                u.setAge(rs.getInt("age"));
+
+                String genderStr = rs.getString("gender");
+                if (genderStr != null) {
+                    u.setGender(Gender.valueOf(genderStr));
+                }
+
+                return u;
+            } catch (SQLException e) {
+                throw new RuntimeException(
+                        "Error mapping User from ResultSet", e
+                );
+            }
+        }, id);
+
+        if (user == null) {
+            throw new EntityNotFoundException(
+                    "User with ID " + id + " not found!"
+            );
         }
-        throw new EntityNotFoundException("User with ID " + id
-                + " not found!");
+
+        return user;
     }
 
     /**
@@ -90,8 +194,19 @@ public final class UserService {
      * @return true if the email is registered, false otherwise
      */
     public boolean isEmailTaken(final String email) {
-        return allUsers.values().stream()
-                .anyMatch(user -> user.getEmail().equals(email));
+        String sql = "SELECT EXISTS (SELECT 1 FROM users WHERE email = ?)";
+
+        Boolean exists = jdbcTemplate.findOne(sql, rs -> {
+            try {
+                return rs.getBoolean(1);
+            } catch (SQLException e) {
+                throw new RuntimeException(
+                        "Error checking if email is taken", e
+                );
+            }
+        }, email);
+
+        return exists != null && exists;
     }
 
     /**
@@ -104,7 +219,8 @@ public final class UserService {
         if (isEmailTaken(email)) {
             throw new EmailAlreadyExistsException(
                     "Error 409: This email is already registered! "
-                            + "Please try another one.");
+                            + "Please try another one."
+            );
         }
     }
 }

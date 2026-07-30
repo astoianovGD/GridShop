@@ -1,8 +1,8 @@
 # 🛍️ GridShop Console Marketplace
 
-GridShop is a Java console application that simulates an online marketplace with **role-based access control**. The project demonstrates object-oriented programming, layered architecture, authentication, CRUD operations, custom exception handling, and unit testing.
+GridShop is a Java console marketplace application with **role-based access control**. The project demonstrates object-oriented programming, layered architecture, authentication, CRUD operations, PostgreSQL integration, Docker, custom exception handling, and unit testing.
 
-The application is designed to showcase Java Core skills without using a database or external frameworks such as Spring.
+The application is built using **Java Core** with **PostgreSQL** for data persistence and follows a clean layered architecture without using external frameworks such as Spring.
 
 ---
 
@@ -10,10 +10,11 @@ The application is designed to showcase Java Core skills without using a databas
 
 ## 🔐 Authentication
 
-- Sign In
 - User Registration
+- Sign In
 - Email format validation
 - Unique email validation
+- Role-based authorization
 
 ---
 
@@ -32,6 +33,7 @@ The application is designed to showcase Java Core skills without using a databas
 - Add products
 - Edit products
 - Remove products
+- Manage product categories
 - Sort products
 - Filter products
 - Search products
@@ -44,11 +46,13 @@ The application is designed to showcase Java Core skills without using a databas
 ## 👤 User
 
 - Browse marketplace products
+- Browse products by category
 - Sort products
 - Filter products
 - Search products
 - Add products to shopping cart
 - Remove products from shopping cart
+- Change product quantities
 - Purchase products
 - View purchase history
 - Edit personal information
@@ -60,19 +64,63 @@ The application is designed to showcase Java Core skills without using a databas
 
 Products support:
 
-- Sorting by price (Ascending / Descending)
-- Sorting alphabetically (A-Z / Z-A)
+- Searching by product name
 - Filtering by:
+  - Category
   - First letter
   - Minimum price
   - Maximum price
-- Searching by product name
+- Sorting by:
+  - Price (Ascending / Descending)
+  - Name (A–Z / Z–A)
+
+---
+
+# 🗄️ Database
+
+The application uses **PostgreSQL** for persistent data storage.
+
+### Main Entities
+
+- Roles
+- Users
+- Categories
+- Products
+- Shopping Buckets
+- Bucket Items
+- Orders
+- Order Items
+
+The database schema is initialized automatically using **init.sql** when the Docker container starts for the first time.
+
+---
+
+# 🐳 Docker
+
+The project includes a complete Docker Compose configuration.
+
+### Services
+
+- PostgreSQL
+- pgAdmin 4
+
+Start the application infrastructure:
+
+```bash
+docker compose up -d
+```
+
+Stop containers:
+
+```bash
+docker compose down
+```
 
 ---
 
 # 🏗️ Project Structure
 
-```
+```text
 src
 ├── main
 │   └── java
@@ -91,21 +139,17 @@ src
 │           ├── Enums
 │           └── Main.java
 │
-└── test
-    └── java
-        └── com.bobocode
-            ├── Entities
-            ├── Menus
-            ├── Services
-            ├── Utility
-            └── MainTest.java
+├── docker
+│   └── postgres
+│       └── init.sql
+│
+├── docker-compose.yml
+└── .env
 ```
 
 ---
 
 # 🏛️ Architecture
-
-The project follows a classic layered architecture.
 
 ```
 Console (Menus)
@@ -114,25 +158,37 @@ Console (Menus)
 Business Logic (Services)
         │
         ▼
-Entities (Models)
+Database Layer (JDBC)
+        │
+        ▼
+PostgreSQL
 ```
 
 ### Responsibilities
 
 ### Menus
+
 Responsible for user interaction through the console.
 
 ### Services
+
 Contain the application's business logic.
 
+### Database
+
+Handles data persistence using PostgreSQL.
+
 ### Entities
+
 Represent domain models and application data.
 
 ### Utility
-Helper and validation classes.
+
+Contains helper and validation classes.
 
 ### Exceptions
-Custom exceptions for error handling.
+
+Contains custom exceptions for error handling.
 
 ---
 
@@ -157,6 +213,9 @@ The project includes comprehensive **unit testing** using **JUnit 5** and **Mock
 - Authentication
 - Product filtering
 - Product sorting
+- Category operations
+- Shopping cart logic
+- Purchase operations
 - User management
 - Email validation
 - Exception handling
@@ -165,26 +224,30 @@ The project includes comprehensive **unit testing** using **JUnit 5** and **Mock
 
 # 🛠️ Technologies
 
-### Core
+## Core
 
 - Java 21
 - Maven
+- PostgreSQL
+- JDBC
 - Lombok
+- Docker
+- Docker Compose
 
-### Testing
+## Testing
 
 - JUnit 5
 - Mockito
 - JaCoCo
 
-### Code Quality
+## Code Quality
 
 - Checkstyle
 - PMD
 - SpotBugs
 - FindSecBugs
 
-### Java Features
+## Java Features
 
 - Stream API
 - Collections Framework
@@ -201,41 +264,77 @@ The application validates:
 - Email uniqueness
 - Product existence
 - User existence
+- Category existence
 - Numeric input
 - Gender values
+- Product quantity
 
 ---
 
-# 📦 Default Marketplace
+# 📦 Initial Database Data
 
-The application starts with two predefined products.
+The application automatically creates default data during database initialization.
 
-| Product | Price |
-|---------|------:|
-| Grid Dynamics T-shirt | $20 |
-| Grid Dynamics Keychain | $1 |
+### Roles
+
+- ADMIN
+- STAFF
+- USER
+
+### Categories
+
+- Electronics
+- Clothing
+- Books
 
 ---
 
 # 🚀 Getting Started
 
-## Clone the repository
+## 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/GridShop.git
+git clone https://github.com/StoyanowAlexey/GridShop.git
 ```
 
-## Open the project
+## 2. Navigate to the project
 
-Open the project using **IntelliJ IDEA** (or any Java IDE with Maven support).
+```bash
+cd GridShop
+```
 
-## Build the project
+## 3. Configure Environment Variables
+
+Create a `.env` file in the project root and provide your own configuration values.
+
+> **⚠️ Important:** The `.env` file contains sensitive information (such as database credentials) and **must not** be committed to version control. Make sure it is included in your `.gitignore` file.
+
+Example:
+
+```env
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_secure_password
+POSTGRES_DB=your_database_name
+
+PGADMIN_DEFAULT_EMAIL=your_email@example.com
+PGADMIN_PASSWORD=your_pgadmin_password
+
+DB_URL=jdbc:postgresql://localhost:5432/your_database_name
+```
+
+## 4. Start PostgreSQL and pgAdmin
+
+```bash
+docker compose up -d
+```
+
+## 5. Build the project
 
 ```bash
 mvn clean install
 ```
 
-## Run the application
+## 6. Run the application
 
 Run
 
@@ -249,8 +348,6 @@ or
 mvn exec:java
 ```
 
-(if the Maven Exec Plugin is configured)
-
 ---
 
 # 📖 Design Principles
@@ -262,7 +359,8 @@ This project demonstrates:
 - Separation of Concerns
 - Single Responsibility Principle (SRP)
 - Layered Architecture
-- Dependency Injection (manual)
+- Manual Dependency Injection
+- JDBC Data Access
 - Custom Exception Handling
 - Stream API
 - Clean Code principles
@@ -271,24 +369,20 @@ This project demonstrates:
 
 # 🔮 Future Improvements
 
-Possible future enhancements include:
-
-- PostgreSQL integration
-- Spring Boot migration
+- Spring Boot
 - Spring Data JPA
 - Hibernate ORM
 - REST API
 - JWT Authentication
-- Password hashing (BCrypt)
-- Shopping cart quantities
-- Product categories
-- Inventory management
-- Order entity instead of Bucket purchase history
-- Docker support
+- BCrypt Password Hashing
+- Inventory Management
+- Product Images
 - Logging (SLF4J + Logback)
 - Pagination
-- Product images
-- CI/CD pipeline with GitHub Actions
+- Liquibase
+- GitHub Actions CI/CD
+- Integration Testing
+- Testcontainers
 
 ---
 

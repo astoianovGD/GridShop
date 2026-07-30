@@ -5,8 +5,6 @@ import com.bobocode.Enums.Gender;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,9 +20,6 @@ class UserTest {
         // Assert
         assertNotNull(user.getBucket(), "User's bucket should not be null upon initialization");
         assertNotNull(user.getPurchaseHistory(), "User's purchase history should not be null upon initialization");
-
-        // Ensure they are empty but ready to use
-        assertTrue(user.getBucket().getProductsInBucket().isEmpty(), "Bucket should be empty");
         assertTrue(user.getPurchaseHistory().isEmpty(), "Purchase history should be empty");
     }
 

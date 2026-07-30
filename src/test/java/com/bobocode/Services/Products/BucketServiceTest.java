@@ -1,104 +1,147 @@
 package com.bobocode.Services.Products;
 
-import com.bobocode.Entities.Products.Bucket;
 import com.bobocode.Entities.Products.Product;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import com.bobocode.Utility.JdbcTemplate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class BucketServiceTest {
 
+    @Mock
+    private JdbcTemplate jdbcTemplate;
+
+    @InjectMocks
     private BucketService bucketService;
 
-    @BeforeEach
-    void setUp() {
-        bucketService = new BucketService();
+    @Test
+    void addProductToBucket_WhenBucketExists_ShouldExecuteInsert() {
+        long userId = 1L;
+        long productId = 100L;
+        int amount = 2;
+        long bucketId = 5L;
+
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId))).thenReturn(bucketId);
+
+        bucketService.addProductToBucket(userId, productId, amount);
+
+        verify(jdbcTemplate, times(1)).execute(anyString(), eq(bucketId), eq(productId), eq(amount));
     }
 
     @Test
-    @DisplayName("Should successfully add a product to the bucket")
-    void testAddProductToBucket() {
-        // Arrange
-        Bucket bucket = new Bucket();
-        Product product = new Product(1L, "T-shirt", BigDecimal.valueOf(20));
+    void addProductToBucket_WhenBucketNotExists_ShouldCreateBucketAndExecuteInsert() {
+        long userId = 1L;
+        long productId = 100L;
+        int amount = 1;
+        long bucketId = 5L;
 
-        // Act
-        bucketService.addProductToBucket(bucket, product);
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId)))
+                .thenReturn(null)
+                .thenReturn(bucketId);
 
-        // Assert
-        assertEquals(1, bucket.getProductsInBucket().size(), "Bucket should contain 1 product");
-        assertTrue(bucket.getProductsInBucket().contains(product), "Bucket should contain the added product");
+        bucketService.addProductToBucket(userId, productId, amount);
+
+        verify(jdbcTemplate, times(1)).execute(eq("INSERT INTO bucket (user_id) VALUES (?) ON CONFLICT (user_id) DO NOTHING"), eq(userId));
+        verify(jdbcTemplate, times(1)).execute(anyString(), eq(bucketId), eq(productId), eq(amount));
     }
 
     @Test
-    @DisplayName("Should throw NullPointerException when adding product to a null bucket")
-    void testAddProductToBucket_NullBucket() {
-        // Arrange
-        Product product = new Product(1L, "T-shirt", BigDecimal.valueOf(20));
+    void removeProductFromBucket_WhenBucketExists_ShouldExecuteDelete() {
+        long userId = 1L;
+        long productId = 100L;
+        long bucketId = 5L;
 
-        // Act & Assert
-        assertThrows(NullPointerException.class,
-                () -> bucketService.addProductToBucket(null, product),
-                "Adding a product to a null bucket should throw NullPointerException");
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId))).thenReturn(bucketId);
+
+        bucketService.removeProductFromBucket(userId, productId);
+
+        verify(jdbcTemplate, times(1)).execute(anyString(), eq(bucketId), eq(productId));
     }
 
     @Test
-    @DisplayName("Should successfully remove a product from the bucket")
-    void testRemoveProductFromBucket() {
-        // Arrange
-        Bucket bucket = new Bucket();
-        Product product = new Product(1L, "T-shirt", BigDecimal.valueOf(20));
-        bucket.getProductsInBucket().add(product);
+    void removeProductFromBucket_WhenBucketNotExists_ShouldDoNothing() {
+        long userId = 1L;
+        long productId = 100L;
 
-        // Act
-        bucketService.removeProductFromBucket(bucket, product);
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId))).thenReturn(null);
 
-        // Assert
-        assertTrue(bucket.getProductsInBucket().isEmpty(), "Bucket should be empty after removing the product");
+        bucketService.removeProductFromBucket(userId, productId);
+
+        verify(jdbcTemplate, never()).execute(anyString(), (Object[]) any());
     }
 
     @Test
-    @DisplayName("Should throw NullPointerException when removing product from a null bucket")
-    void testRemoveProductFromBucket_NullBucket() {
-        // Arrange
-        Product product = new Product(1L, "T-shirt", BigDecimal.valueOf(20));
+    void getProductsFromBucket_WhenBucketExists_ShouldReturnProducts() throws SQLException {
+        long userId = 1L;
+        long bucketId = 5L;
 
-        // Act & Assert
-        assertThrows(NullPointerException.class,
-                () -> bucketService.removeProductFromBucket(null, product),
-                "Removing a product from a null bucket should throw NullPointerException");
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId))).thenReturn(bucketId);
+
+        ResultSet resultSet = mock(ResultSet.class);
+        when(resultSet.getLong("product_id")).thenReturn(10L);
+        when(resultSet.getString("name")).thenReturn("Laptop");
+        when(resultSet.getBigDecimal("price")).thenReturn(new BigDecimal("1000.00"));
+        when(resultSet.getLong("category_id")).thenReturn(2L);
+        when(resultSet.getInt("quantity")).thenReturn(1);
+
+        when(jdbcTemplate.findMany(anyString(), any(Function.class), eq(bucketId))).thenAnswer(invocation -> {
+            Function<ResultSet, Product> mapper = invocation.getArgument(1);
+            return List.of(mapper.apply(resultSet));
+        });
+
+        List<Product> products = bucketService.getProductsFromBucket(userId);
+
+        assertEquals(1, products.size());
+        assertEquals("Laptop", products.get(0).getName());
     }
 
     @Test
-    @DisplayName("Should successfully retrieve the list of products from the bucket")
-    void testGetProductsFromBucket() {
-        // Arrange
-        Bucket bucket = new Bucket();
-        Product product1 = new Product(1L, "T-shirt", BigDecimal.valueOf(20));
-        Product product2 = new Product(2L, "Keychain", BigDecimal.valueOf(1));
-        bucket.getProductsInBucket().addAll(List.of(product1, product2));
+    void getProductsFromBucket_WhenBucketNotExists_ShouldReturnEmptyList() {
+        long userId = 1L;
 
-        // Act
-        List<Product> products = bucketService.getProductsFromBucket(bucket);
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId))).thenReturn(null);
 
-        // Assert
-        assertNotNull(products, "Returned list should not be null");
-        assertEquals(2, products.size(), "Returned list should contain exactly 2 products");
-        assertTrue(products.contains(product1));
-        assertTrue(products.contains(product2));
+        List<Product> products = bucketService.getProductsFromBucket(userId);
+
+        assertNotNull(products);
+        assertTrue(products.isEmpty());
     }
 
     @Test
-    @DisplayName("Should throw NullPointerException when getting products from a null bucket")
-    void testGetProductsFromBucket_NullBucket() {
-        // Act & Assert
-        assertThrows(NullPointerException.class,
-                () -> bucketService.getProductsFromBucket(null),
-                "Getting products from a null bucket should throw NullPointerException");
+    void clearBucket_WhenBucketExists_ShouldExecuteDelete() {
+        long userId = 1L;
+        long bucketId = 5L;
+
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId))).thenReturn(bucketId);
+
+        bucketService.clearBucket(userId);
+
+        verify(jdbcTemplate, times(1)).execute(anyString(), eq(bucketId));
+    }
+
+    @Test
+    void clearBucket_WhenBucketNotExists_ShouldDoNothing() {
+        long userId = 1L;
+
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq(userId))).thenReturn(null);
+
+        bucketService.clearBucket(userId);
+
+        verify(jdbcTemplate, never()).execute(anyString(), (Object[]) any());
     }
 }

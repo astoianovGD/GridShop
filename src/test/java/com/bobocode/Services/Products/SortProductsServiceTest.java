@@ -13,73 +13,55 @@ import static org.junit.jupiter.api.Assertions.*;
 class SortProductsServiceTest {
 
     private SortProductsService sortService;
-    private List<Product> unsortedProducts;
+    private List<Product> testProducts;
 
     @BeforeEach
     void setUp() {
         sortService = new SortProductsService();
-
-        // Prepare mixed/unsorted test products
-        Product p1 = new Product(1L, "Banana", new BigDecimal("5.00"));
-        Product p2 = new Product(2L, "Apple", new BigDecimal("10.00"));
-        Product p3 = new Product(3L, "Laptop", new BigDecimal("1000.00"));
-
-        unsortedProducts = List.of(p1, p2, p3);
+        testProducts = List.of(
+                new Product(1L, "Zebra", BigDecimal.valueOf(150), 1L, 1),
+                new Product(2L, "Apple", BigDecimal.valueOf(50), 1L, 1),
+                new Product(3L, "Mango", BigDecimal.valueOf(100), 1L, 1)
+        );
     }
 
     @Test
-    @DisplayName("Should sort products by price in ascending order")
+    @DisplayName("Should sort products by price ascending")
     void testSortProductsByPriceAsc() {
-        // Act
-        List<Product> sortedList = sortService.sortProductsByPriceAsc(unsortedProducts);
+        List<Product> result = sortService.sortProductsByPriceAsc(testProducts);
 
-        // Assert
-        assertNotNull(sortedList, "Returned list should not be null");
-        assertEquals(3, sortedList.size(), "List size should remain the same");
-        assertEquals("Banana", sortedList.get(0.0 == 0.0 ? 0 : 0).getName(), "Cheapest product should be first (Banana - 5.00)");
-        assertEquals("Apple", sortedList.get(1).getName(), "Second cheapest should be Apple (10.00)");
-        assertEquals("Laptop", sortedList.get(2).getName(), "Most expensive should be last (Laptop - 1000.00)");
+        assertEquals("Apple", result.get(0).getName()); // 50
+        assertEquals("Mango", result.get(1).getName()); // 100
+        assertEquals("Zebra", result.get(2).getName()); // 150
     }
 
     @Test
-    @DisplayName("Should sort products by price in descending order")
+    @DisplayName("Should sort products by price descending")
     void testSortProductsByPriceDesc() {
-        // Act
-        List<Product> sortedList = sortService.sortProductsByPriceDesc(unsortedProducts);
+        List<Product> result = sortService.sortProductsByPriceDesc(testProducts);
 
-        // Assert
-        assertNotNull(sortedList, "Returned list should not be null");
-        assertEquals(3, sortedList.size(), "List size should remain the same");
-        assertEquals("Laptop", sortedList.get(0).getName(), "Most expensive product should be first");
-        assertEquals("Apple", sortedList.get(1).getName(), "Second should be Apple");
-        assertEquals("Banana", sortedList.get(2).getName(), "Cheapest product should be last");
+        assertEquals("Zebra", result.get(0).getName()); // 150
+        assertEquals("Mango", result.get(1).getName()); // 100
+        assertEquals("Apple", result.get(2).getName()); // 50
     }
 
     @Test
-    @DisplayName("Should sort products by name in ascending order (alphabetical)")
+    @DisplayName("Should sort products by name ascending")
     void testSortProductsByNameAsc() {
-        // Act
-        List<Product> sortedList = sortService.sortProductsByNameAsc(unsortedProducts);
+        List<Product> result = sortService.sortProductsByNameAsc(testProducts);
 
-        // Assert
-        assertNotNull(sortedList, "Returned list should not be null");
-        assertEquals(3, sortedList.size(), "List size should remain the same");
-        assertEquals("Apple", sortedList.get(0).getName(), "First alphabetically should be Apple");
-        assertEquals("Banana", sortedList.get(1).getName(), "Second should be Banana");
-        assertEquals("Laptop", sortedList.get(2).getName(), "Last alphabetically should be Laptop");
+        assertEquals("Apple", result.get(0).getName());
+        assertEquals("Mango", result.get(1).getName());
+        assertEquals("Zebra", result.get(2).getName());
     }
 
     @Test
-    @DisplayName("Should sort products by name in descending order (reverse alphabetical)")
+    @DisplayName("Should sort products by name descending")
     void testSortProductsByNameDesc() {
-        // Act
-        List<Product> sortedList = sortService.sortProductsByNameDesc(unsortedProducts);
+        List<Product> result = sortService.sortProductsByNameDesc(testProducts);
 
-        // Assert
-        assertNotNull(sortedList, "Returned list should not be null");
-        assertEquals(3, sortedList.size(), "List size should remain the same");
-        assertEquals("Laptop", sortedList.get(0).getName(), "First in reverse should be Laptop");
-        assertEquals("Banana", sortedList.get(1).getName(), "Second should be Banana");
-        assertEquals("Apple", sortedList.get(2).getName(), "Last in reverse should be Apple");
+        assertEquals("Zebra", result.get(0).getName());
+        assertEquals("Mango", result.get(1).getName());
+        assertEquals("Apple", result.get(2).getName());
     }
 }

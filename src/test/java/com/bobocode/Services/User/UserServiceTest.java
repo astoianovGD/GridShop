@@ -1,231 +1,162 @@
 package com.bobocode.Services.User;
 
-import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Entities.Users.User;
+import com.bobocode.Enums.Gender;
 import com.bobocode.Exceptions.EmailAlreadyExistsException;
 import com.bobocode.Exceptions.EntityNotFoundException;
-import org.junit.jupiter.api.DisplayName;
+import com.bobocode.Utility.JdbcTemplate;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    @Test
-    @DisplayName("Should throw NullPointerException if initialized with a null map")
-    void testNullMap() {
-        assertThrows(NullPointerException.class,
-                () -> new UserService(null),
-                "Creating UserService with a null map should throw NullPointerException");
+    @Mock
+    private JdbcTemplate jdbcTemplate;
+
+    @InjectMocks
+    private UserService userService;
+
+    private User testUser;
+
+    @BeforeEach
+    void setUp() {
+        testUser = new User();
+        testUser.setId(1L);
+        testUser.setEmail("test@gmail.com");
+        testUser.setPassword("password123");
+        testUser.setFirstName("John");
+        testUser.setLastName("Doe");
+        testUser.setAge(25);
+        testUser.setGender(Gender.MALE);
     }
 
     @Test
-    @DisplayName("Should assign an ID and add new user to the map")
-    void testRegisterNewUser() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        UserService userService = new UserService(allUsers);
-        User newUser = new User();
-        newUser.setEmail("test@email.com");
+    void registerNewUser_shouldInsertUserAndCreateBucket() {
+        when(jdbcTemplate.findOne(any(String.class), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(1L);
 
-        // Act
-        userService.registerNewUser(newUser);
+        userService.registerNewUser(testUser);
 
-        // Assert
-        assertNotNull(newUser.getId(), "Registered user should be assigned an ID");
-        assertTrue(allUsers.containsKey(newUser.getId()), "The map should contain the new user's ID");
-        assertEquals(newUser, allUsers.get(newUser.getId()), "The object in the map should match the registered user");
+        verify(jdbcTemplate, times(1)).findOne(any(String.class), any(), eq(testUser.getEmail()),
+                eq(testUser.getPassword()), eq(testUser.getLastName()), eq(testUser.getFirstName()),
+                eq(testUser.getAge()), eq("MALE"));
+        verify(jdbcTemplate, times(1)).execute(eq("INSERT INTO bucket (user_id) VALUES (?)"), eq(1L));
     }
 
     @Test
-    @DisplayName("Should successfully delete a user account")
-    void testDeleteUserAccount_Success() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        User user = new User();
-        user.setId(5L);
-        allUsers.put(5L, user);
+    void deleteUserAccount_shouldDeactivateUser_whenUserExists() throws SQLException {
+        ResultSet resultSet = mock(ResultSet.class);
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenAnswer(invocation -> {
+            Function<ResultSet, User> mapper = invocation.getArgument(1);
+            return mapper.apply(resultSet);
+        });
 
-        UserService userService = new UserService(allUsers);
+        userService.deleteUserAccount(1L);
 
-        // Act
-        userService.deleteUserAccount(5L);
-
-        // Assert
-        assertFalse(allUsers.containsKey(5L), "Map should no longer contain the user ID");
-        assertTrue(allUsers.isEmpty(), "Map should be empty after deletion");
+        verify(jdbcTemplate, times(1)).execute(eq("UPDATE users SET is_active = false WHERE user_id = ?"), eq(1L));
     }
 
     @Test
-    @DisplayName("Should throw IllegalArgumentException when deleting non-existent ID")
-    void testDeleteUserAccount_NotFound() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        UserService userService = new UserService(allUsers);
+    void deleteUserAccount_shouldThrowException_whenUserNotFound() {
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenReturn(null);
 
-        // Act & Assert
-        // In your code, if ID is not found, get() returns null.
-        // (null instanceof User) is false, so it triggers IllegalArgumentException.
-        assertThrows(IllegalArgumentException.class,
-                () -> userService.deleteUserAccount(99L),
-                "Should throw IllegalArgumentException for non-existent user");
+        assertThatThrownBy(() -> userService.deleteUserAccount(1L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("User with ID 1 not found!");
+
+        verify(jdbcTemplate, never()).execute(any(String.class), any(Long.class));
     }
 
     @Test
-    @DisplayName("Should throw IllegalArgumentException when deleting an ID that is not a User")
-    void testDeleteUserAccount_WrongType() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        // Create an anonymous AbstractUser that is NOT a User
-        AbstractUser notAUser = new AbstractUser() {};
-        notAUser.setId(10L);
-        allUsers.put(10L, notAUser);
+    void editPersonalInformation_shouldUpdateUser_whenUserExists() throws SQLException {
+        ResultSet resultSet = mock(ResultSet.class);
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenAnswer(invocation -> {
+            Function<ResultSet, User> mapper = invocation.getArgument(1);
+            return mapper.apply(resultSet);
+        });
 
-        UserService userService = new UserService(allUsers);
+        User updatedInfo = new User();
+        updatedInfo.setEmail("new@gmail.com");
+        updatedInfo.setPassword("newpass");
+        updatedInfo.setLastName("Smith");
+        updatedInfo.setFirstName("Jane");
+        updatedInfo.setAge(30);
+        updatedInfo.setGender(Gender.FEMALE);
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class,
-                () -> userService.deleteUserAccount(10L),
-                "Should throw IllegalArgumentException if the entity is not a User");
+        userService.editPersonalInformation(1L, updatedInfo);
+
+        verify(jdbcTemplate, times(1)).execute(
+                eq("UPDATE users SET email = ?, password = ?, lastname = ?, firstname = ?, age = ?, gender = ? WHERE user_id = ?"),
+                eq("new@gmail.com"), eq("newpass"), eq("Smith"), eq("Jane"), eq(30), eq("FEMALE"), eq(1L)
+        );
     }
 
     @Test
-    @DisplayName("Should update user information in the map")
-    void testEditPersonalInformation() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        User originalUser = new User();
-        originalUser.setId(1L);
-        originalUser.setFirstName("Old Name");
-        allUsers.put(1L, originalUser);
+    void getAllUsers_shouldReturnListOfUsers() throws SQLException {
+        ResultSet resultSet = mock(ResultSet.class);
+        when(jdbcTemplate.findMany(any(String.class), any())).thenAnswer(invocation -> {
+            Function<ResultSet, User> mapper = invocation.getArgument(1);
+            return List.of(mapper.apply(resultSet));
+        });
 
-        UserService userService = new UserService(allUsers);
+        List<User> users = userService.getAllUsers();
 
-        User changedUser = new User();
-        changedUser.setId(1L);
-        changedUser.setFirstName("New Name");
-
-        // Act
-        userService.editPersonalInformation(1L, changedUser);
-
-        // Assert
-        assertEquals("New Name", allUsers.get(1L).getFirstName(), "User's first name should be updated");
-        assertEquals(changedUser, allUsers.get(1L), "The map should hold the updated user object");
+        assertThat(users).hasSize(1);
     }
 
     @Test
-    @DisplayName("Should return a list containing only instances of User")
-    void testGetAllUsers() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        User user1 = new User();
-        User user2 = new User();
-        AbstractUser notAUser = new AbstractUser() {}; // Not a standard User
+    void getUserById_shouldReturnUser_whenFound() throws SQLException {
+        ResultSet resultSet = mock(ResultSet.class);
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenAnswer(invocation -> {
+            Function<ResultSet, User> mapper = invocation.getArgument(1);
+            return mapper.apply(resultSet);
+        });
 
-        allUsers.put(1L, user1);
-        allUsers.put(2L, user2);
-        allUsers.put(3L, notAUser); // This should be filtered out
+        User user = userService.getUserById(1L);
 
-        UserService userService = new UserService(allUsers);
-
-        // Act
-        List<User> userList = userService.getAllUsers();
-
-        // Assert
-        assertEquals(2, userList.size(), "List should contain exactly 2 User instances");
-        assertTrue(userList.contains(user1), "List should contain user1");
-        assertTrue(userList.contains(user2), "List should contain user2");
+        assertThat(user).isNotNull();
     }
 
     @Test
-    @DisplayName("Should return the specific user by their ID")
-    void testGetUserById_Success() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        User expectedUser = new User();
-        expectedUser.setId(7L);
-        allUsers.put(7L, expectedUser);
+    void getUserById_shouldThrowException_whenNotFound() {
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenReturn(null);
 
-        UserService userService = new UserService(allUsers);
-
-        // Act
-        User actualUser = userService.getUserById(7L);
-
-        // Assert
-        assertNotNull(actualUser, "Returned user should not be null");
-        assertEquals(expectedUser, actualUser, "Returned user should match the one in the map");
+        assertThatThrownBy(() -> userService.getUserById(1L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("User with ID 1 not found!");
     }
 
     @Test
-    @DisplayName("Should throw EntityNotFoundException if user ID is not found")
-    void testGetUserById_NotFound() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        UserService userService = new UserService(allUsers);
+    void isEmailTaken_shouldReturnTrue_whenEmailExists() {
+        when(jdbcTemplate.findOne(any(String.class), any(), eq("taken@gmail.com"))).thenReturn(true);
 
-        // Act & Assert
-        assertThrows(EntityNotFoundException.class,
-                () -> userService.getUserById(99L),
-                "Should throw EntityNotFoundException for missing ID");
+        boolean taken = userService.isEmailTaken("taken@gmail.com");
+
+        assertThat(taken).isTrue();
     }
 
     @Test
-    @DisplayName("Should return true if email is already taken")
-    void testIsEmailTaken_True() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        User existingUser = new User();
-        existingUser.setEmail("taken@email.com");
-        allUsers.put(1L, existingUser);
+    void validateEmailIsFree_shouldThrowException_whenEmailTaken() {
+        when(jdbcTemplate.findOne(any(String.class), any(), eq("taken@gmail.com"))).thenReturn(true);
 
-        UserService userService = new UserService(allUsers);
-
-        // Act & Assert
-        assertTrue(userService.isEmailTaken("taken@email.com"), "Should return true for an existing email");
-    }
-
-    @Test
-    @DisplayName("Should return false if email is not taken")
-    void testIsEmailTaken_False() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        UserService userService = new UserService(allUsers);
-
-        // Act & Assert
-        assertFalse(userService.isEmailTaken("free@email.com"), "Should return false for a non-existing email");
-    }
-
-    @Test
-    @DisplayName("Should not throw an exception when validating a free email")
-    void testValidateEmailIsFree_Success() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        UserService userService = new UserService(allUsers);
-
-        // Act & Assert
-        // Does not throw any exception
-        assertDoesNotThrow(() -> userService.validateEmailIsFree("free@email.com"),
-                "Should not throw an exception for a free email");
-    }
-
-    @Test
-    @DisplayName("Should throw EmailAlreadyExistsException when validating a taken email")
-    void testValidateEmailIsFree_Taken() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        User existingUser = new User();
-        existingUser.setEmail("taken@email.com");
-        allUsers.put(1L, existingUser);
-
-        UserService userService = new UserService(allUsers);
-
-        // Act & Assert
-        assertThrows(EmailAlreadyExistsException.class,
-                () -> userService.validateEmailIsFree("taken@email.com"),
-                "Should throw EmailAlreadyExistsException for an existing email");
+        assertThatThrownBy(() -> userService.validateEmailIsFree("taken@gmail.com"))
+                .isInstanceOf(EmailAlreadyExistsException.class)
+                .hasMessageContaining("Error 409: This email is already registered!");
     }
 }

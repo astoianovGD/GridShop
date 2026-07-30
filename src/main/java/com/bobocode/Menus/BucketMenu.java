@@ -5,10 +5,12 @@ import com.bobocode.Entities.Users.User;
 import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.Products.BucketService;
 import com.bobocode.Services.Products.MarketPlaceService;
+import com.bobocode.Services.Products.OrderService;
 import com.bobocode.Utility.InputValidator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -37,6 +39,12 @@ public final class BucketMenu {
     private final CatalogMenu catalogMenu;
 
     /**
+     * Service for orders.
+     */
+    @NonNull
+    private final OrderService orderService;
+
+    /**
      * Handles user interaction for bucket operations.
      *
      * @param user    the current authenticated user
@@ -44,14 +52,16 @@ public final class BucketMenu {
      */
     public void handleBucket(final User user, final Scanner scanner) {
         while (true) {
-            if (user.getBucket().getProductsInBucket().isEmpty()) {
+            List<Product> userBucketProducts = bucketService.
+                    getProductsFromBucket(user.getId());
+
+            if (userBucketProducts.isEmpty()) {
                 System.out.println("\nYour bucket is empty! "
                         + "Add some products first.");
                 return;
             }
-            // exception 400
-            catalogMenu.catalogAllProducts(
-                    user.getBucket().getProductsInBucket());
+
+            catalogMenu.catalogAllProducts(userBucketProducts);
 
             System.out.println("\n1) Purchase Items \n2) Remove Item "
                     + "\n0) Go Back");
@@ -65,9 +75,8 @@ public final class BucketMenu {
                         long id = InputValidator.getValidId(
                                 scanner, "Enter Product ID to remove:"
                         );
-                        Product product = marketPlaceService.getProductById(id);
-                        bucketService.removeProductFromBucket(
-                                user.getBucket(), product);
+
+                        bucketService.removeProductFromBucket(user.getId(), id);
                         System.out.println("Product successfully removed!");
                     } catch (EntityNotFoundException e) {
                         System.out.println(e.getMessage());
@@ -88,13 +97,12 @@ public final class BucketMenu {
      * @param user    the user performing the checkout
      */
     private void checkout(final Scanner scanner, final User user) {
-        if (bucketService.getProductsFromBucket(
-                user.getBucket()).isEmpty()) {
+        if (bucketService.getProductsFromBucket(user.getId()).isEmpty()) {
             System.out.println("Your bucket is empty! "
                     + "Add some products first.");
             return;
         }
-        // exception 400
+
         Pattern cardPattern = Pattern.compile("^\\d{16}$");
 
         while (true) {
@@ -104,17 +112,22 @@ public final class BucketMenu {
             if (cardPattern.matcher(input).matches()) {
                 break;
             }
-            System.out.println("Bad card format try (**** **** **** ****, "
-                    + "or without spaces)");
+            System.out.println("Bad card format try "
+                    + "(**** **** **** ****, or without spaces)");
         }
 
         System.out.println("Processing...");
         System.out.println("Debiting of funds...");
-        System.out.println("Success!!! Purchase was made!");
 
-        user.getPurchaseHistory().add(user.getBucket());
+        orderService.createOrderFromBucket(user.getId());
 
-        // give user new bucket to save purchase history
-        user.setBucket(new com.bobocode.Entities.Products.Bucket());
+        System.out.println("Success!!! "
+                + "Purchase was made and saved to your history!");
+
+        if (user.getBucket() != null
+                && user.getBucket().getProductsInBucket() != null) {
+            user.getBucket().getProductsInBucket().clear();
+        }
     }
 }
+

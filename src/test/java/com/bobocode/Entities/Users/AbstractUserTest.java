@@ -2,26 +2,10 @@ package com.bobocode.Entities.Users;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AbstractUserTest {
-
-    @Test
-    @DisplayName("generateNextId() should increment and return unique IDs")
-    void testGenerateNextId() {
-        // Arrange & Act
-        long id1 = AbstractUser.generateNextId();
-        long id2 = AbstractUser.generateNextId();
-        long id3 = AbstractUser.generateNextId();
-
-        // Assert
-        assertTrue(id2 > id1, "Second ID should be greater than the first");
-        assertTrue(id3 > id2, "Third ID should be greater than the second");
-        assertEquals(id1 + 1, id2, "ID should increment exactly by 1");
-    }
 
     @Test
     @DisplayName("toString() should format correctly using concrete subclass name")
@@ -65,6 +49,7 @@ class AbstractUserTest {
 
         Admin admin3 = new Admin();
         admin3.setId(2L); // Different ID
+        admin3.setEmail("other@test.com");
 
         // Assert
         assertEquals(admin1, admin2, "Users with same data should be equal");

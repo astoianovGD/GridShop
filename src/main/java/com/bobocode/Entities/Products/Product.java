@@ -28,4 +28,14 @@ public class Product {
      * The price of the product.
      */
     private BigDecimal price;
+
+    /**
+     * The category ID associated with the product.
+     */
+    private long categoryId;
+
+    /**
+     * The available quantity of the product.
+     */
+    private int quantity;
 }

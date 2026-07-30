@@ -1,221 +1,120 @@
 package com.bobocode.Services.User;
 
-import com.bobocode.Entities.Users.AbstractUser;
 import com.bobocode.Entities.Users.Staff;
 import com.bobocode.Exceptions.EntityNotFoundException;
-import org.junit.jupiter.api.DisplayName;
+import com.bobocode.Utility.JdbcTemplate;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class StaffServiceTest {
 
-    @Test
-    @DisplayName("Should throw NullPointerException immediately upon creation if map is null")
-    void testNullMap() {
-        // @NonNull
-        NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> new StaffService(null),
-                "Creating StaffService with null map should throw NullPointerException");
+    @Mock
+    private JdbcTemplate jdbcTemplate;
 
-        assertTrue(exception.getMessage().contains("is marked non-null but is null"));
+    @InjectMocks
+    private StaffService staffService;
+
+    private Staff testStaff;
+
+    @BeforeEach
+    void setUp() {
+        testStaff = new Staff();
+        testStaff.setId(10L);
+        testStaff.setEmail("staff@bobocode.com");
+        testStaff.setPassword("admin123");
+        testStaff.setFirstName("Alice");
+        testStaff.setLastName("Smith");
     }
 
     @Test
-    @DisplayName("Should successfully add new staff and assign an ID")
-    void testAddNewStaff() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        StaffService staffService = new StaffService(allUsers);
-        Staff newStaff = new Staff();
-        newStaff.setFirstName("Alice");
+    void addNewStaff_shouldExecuteInsert() {
+        staffService.addNewStaff(testStaff);
 
-        // Act
-        staffService.addNewStaff(newStaff);
-
-        // Assert
-        assertNotNull(newStaff.getId(), "New staff should be assigned an ID");
-        assertTrue(allUsers.containsKey(newStaff.getId()), "Map should contain the newly added staff");
-        assertEquals(newStaff, allUsers.get(newStaff.getId()), "The object in the map should be the same as the added staff");
+        verify(jdbcTemplate, times(1)).execute(
+                any(String.class),
+                eq(testStaff.getEmail()),
+                eq(testStaff.getPassword()),
+                eq(testStaff.getLastName()),
+                eq(testStaff.getFirstName()),
+                eq(null),
+                eq(null)
+        );
     }
 
     @Test
-    @DisplayName("Should successfully edit an existing staff member")
-    void testEditStaff_Success() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        Staff originalStaff = new Staff();
-        originalStaff.setId(1L);
-        originalStaff.setFirstName("Old Name");
-        allUsers.put(1L, originalStaff);
+    void editStaff_shouldUpdateStaff_whenExists() throws SQLException {
+        ResultSet resultSet = mock(ResultSet.class);
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(10L))).thenAnswer(invocation -> {
+            Function<ResultSet, Staff> mapper = invocation.getArgument(1);
+            return mapper.apply(resultSet);
+        });
 
-        StaffService staffService = new StaffService(allUsers);
+        Staff edited = new Staff();
+        edited.setEmail("newstaff@bobocode.com");
+        edited.setPassword("newpass");
+        edited.setLastName("Johnson");
+        edited.setFirstName("Bob");
 
-        Staff editedStaff = new Staff();
-        editedStaff.setId(1L);
-        editedStaff.setFirstName("New Name");
+        staffService.editStaff(10L, edited);
 
-        // Act
-        staffService.editStaff(1L, editedStaff);
-
-        // Assert
-        assertEquals("New Name", allUsers.get(1L).getFirstName(), "The staff name in the map should be updated");
-        assertEquals(editedStaff, allUsers.get(1L), "The map should contain the updated staff object");
+        verify(jdbcTemplate, times(1)).execute(
+                any(String.class),
+                eq("newstaff@bobocode.com"),
+                eq("newpass"),
+                eq("Johnson"),
+                eq("Bob"),
+                eq(10L)
+        );
     }
 
     @Test
-    @DisplayName("Should do nothing when trying to edit a staff member that does not exist")
-    void testEditStaff_NotFound() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        Staff existingStaff = new Staff();
-        existingStaff.setId(1L);
-        allUsers.put(1L, existingStaff);
+    void removeStaff_shouldDeactivate_whenExists() throws SQLException {
+        ResultSet resultSet = mock(ResultSet.class);
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(10L))).thenAnswer(invocation -> {
+            Function<ResultSet, Staff> mapper = invocation.getArgument(1);
+            return mapper.apply(resultSet);
+        });
 
-        StaffService staffService = new StaffService(allUsers);
+        staffService.removeStaff(10L);
 
-        Staff editedStaff = new Staff();
-        editedStaff.setId(99L); // ID, which we dont have in map
-
-        // Act
-        staffService.editStaff(99L, editedStaff);
-
-        // Assert
-        assertFalse(allUsers.containsKey(99L), "Map should not contain the non-existent ID after edit attempt");
-        assertEquals(1, allUsers.size(), "Map size should remain unchanged");
+        verify(jdbcTemplate, times(1)).execute(eq("UPDATE users SET is_active = false WHERE user_id = ?"), eq(10L));
     }
 
     @Test
-    @DisplayName("Should successfully remove an existing staff member")
-    void testRemoveStaff_Success() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        Staff existingStaff = new Staff();
-        existingStaff.setId(1L);
-        allUsers.put(1L, existingStaff);
+    void getAllStaff_shouldReturnList() throws SQLException {
+        ResultSet resultSet = mock(ResultSet.class);
+        when(jdbcTemplate.findMany(any(String.class), any())).thenAnswer(invocation -> {
+            Function<ResultSet, Staff> mapper = invocation.getArgument(1);
+            return List.of(mapper.apply(resultSet));
+        });
 
-        StaffService staffService = new StaffService(allUsers);
-
-        // Act
-        staffService.removeStaff(1L);
-
-        // Assert
-        assertFalse(allUsers.containsKey(1L), "Map should not contain the staff member after removal");
-        assertTrue(allUsers.isEmpty(), "Map should be empty");
-    }
-
-    @Test
-    @DisplayName("Should throw EntityNotFoundException when trying to remove a non-existent user")
-    void testRemoveStaff_NotFound() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        StaffService staffService = new StaffService(allUsers);
-
-        // Act & Assert
-        assertThrows(EntityNotFoundException.class,
-                () -> staffService.removeStaff(99L),
-                "Should throw EntityNotFoundException if staff ID is not found");
-    }
-
-    @Test
-    @DisplayName("Should throw IllegalArgumentException when trying to remove a user that is not a Staff member")
-    void testRemoveStaff_WrongUserType() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        // new user which is not staff
-        AbstractUser notAStaffMember = new AbstractUser() {};
-        notAStaffMember.setId(2L);
-        allUsers.put(2L, notAStaffMember);
-
-        StaffService staffService = new StaffService(allUsers);
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class,
-                () -> staffService.removeStaff(2L),
-                "Should throw IllegalArgumentException if the user is not a Staff member");
-    }
-
-    @Test
-    @DisplayName("Should return a list of only Staff members")
-    void testGetAllStaff() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-
-        Staff staff1 = new Staff();
-        staff1.setId(1L);
-
-        Staff staff2 = new Staff();
-        staff2.setId(2L);
-
-        AbstractUser notAStaffMember = new AbstractUser() {};
-        notAStaffMember.setId(3L);
-
-        allUsers.put(1L, staff1);
-        allUsers.put(2L, staff2);
-        allUsers.put(3L, notAStaffMember);
-
-        StaffService staffService = new StaffService(allUsers);
-
-        // Act
         List<Staff> staffList = staffService.getAllStaff();
 
-        // Assert
-        assertEquals(2, staffList.size(), "List should contain exactly 2 staff members");
-        assertTrue(staffList.contains(staff1));
-        assertTrue(staffList.contains(staff2));
-        assertFalse(staffList.contains((Staff) null));
+        assertThat(staffList).hasSize(1);
     }
 
     @Test
-    @DisplayName("Should successfully return a Staff member by ID")
-    void testGetStaffById_Success() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        Staff existingStaff = new Staff();
-        existingStaff.setId(1L);
-        allUsers.put(1L, existingStaff);
+    void getStaffById_shouldThrowException_whenNotFound() {
+        when(jdbcTemplate.findOne(any(String.class), any(), eq(99L))).thenReturn(null);
 
-        StaffService staffService = new StaffService(allUsers);
-
-        // Act
-        Staff retrievedStaff = staffService.getStaffById(1L);
-
-        // Assert
-        assertNotNull(retrievedStaff);
-        assertEquals(existingStaff, retrievedStaff);
-    }
-
-    @Test
-    @DisplayName("Should throw EntityNotFoundException when getting Staff by non-existent ID")
-    void testGetStaffById_NotFound() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        StaffService staffService = new StaffService(allUsers);
-
-        // Act & Assert
-        assertThrows(EntityNotFoundException.class,
-                () -> staffService.getStaffById(99L),
-                "Should throw exception for missing ID");
-    }
-
-    @Test
-    @DisplayName("Should throw EntityNotFoundException when getting ID that belongs to a non-Staff user")
-    void testGetStaffById_WrongUserType() {
-        // Arrange
-        Map<Long, AbstractUser> allUsers = new HashMap<>();
-        AbstractUser notAStaffMember = new AbstractUser() {};
-        notAStaffMember.setId(2L);
-        allUsers.put(2L, notAStaffMember);
-
-        StaffService staffService = new StaffService(allUsers);
-
-        // Act & Assert
-        assertThrows(EntityNotFoundException.class,
-                () -> staffService.getStaffById(2L),
-                "Should throw exception because the user is not a Staff member");
+        assertThatThrownBy(() -> staffService.getStaffById(99L))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("HTTP STATUS 404 : Staff with ID 99 not found!");
     }
 }

@@ -64,7 +64,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should correctly print list of products when catalogAllProducts is called")
     void testCatalogAllProducts_Success() {
-        Product p = new Product(1L, "Laptop", new BigDecimal("1200.00"));
+        // ОНОВЛЕНО: додано categoryId (1L) та quantity (10)
+        Product p = new Product(1L, "Laptop", new BigDecimal("1200.00"), 1L, 10);
         catalogMenu.catalogAllProducts(List.of(p));
 
         String output = outContent.toString();
@@ -72,6 +73,7 @@ class CatalogMenuTest {
         assertTrue(output.contains("ID: 1"));
         assertTrue(output.contains("Name: Laptop"));
         assertTrue(output.contains("Price: $1200.00"));
+        assertTrue(output.contains("Quantity: 10 pcs"));
     }
 
     @Test
@@ -84,7 +86,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should handle sorting by price ascending successfully")
     void testHandleSorting_PriceAsc() {
-        Product p = new Product(1L, "Book", BigDecimal.TEN);
+        // ОНОВЛЕНО
+        Product p = new Product(1L, "Book", BigDecimal.TEN, 2L, 5);
         when(marketPlaceServiceMock.getAllProducts()).thenReturn(List.of(p));
         when(sortProductsServiceMock.sortProductsByPriceAsc(anyList())).thenReturn(List.of(p));
 
@@ -134,7 +137,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should filter products by starting letter successfully")
     void testHandleFiltering_Letter_Success() {
-        Product p = new Product(1L, "Apple", BigDecimal.ONE);
+        // ОНОВЛЕНО
+        Product p = new Product(1L, "Apple", BigDecimal.ONE, 3L, 20);
         when(marketPlaceServiceMock.getAllProducts()).thenReturn(List.of(p));
         when(filterProductsServiceMock.filterProductsByLetterBeginWith(eq('A'), anyList())).thenReturn(List.of(p));
 
@@ -156,7 +160,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should filter products by price higher than successfully")
     void testHandleFiltering_PriceHigher_Success() {
-        Product p = new Product(1L, "Phone", BigDecimal.valueOf(500));
+        // ОНОВЛЕНО
+        Product p = new Product(1L, "Phone", BigDecimal.valueOf(500), 1L, 10);
         when(marketPlaceServiceMock.getAllProducts()).thenReturn(List.of(p));
         when(filterProductsServiceMock.filterProductsByPriceHigherThan(eq(new BigDecimal("100")), anyList())).thenReturn(List.of(p));
 
@@ -179,7 +184,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should filter products by price lower than successfully")
     void testHandleFiltering_PriceLower_Success() {
-        Product p = new Product(1L, "Candy", BigDecimal.ONE);
+        // ОНОВЛЕНО
+        Product p = new Product(1L, "Candy", BigDecimal.ONE, 4L, 50);
         when(marketPlaceServiceMock.getAllProducts()).thenReturn(List.of(p));
         when(filterProductsServiceMock.filterProductsByPriceLowerThan(eq(new BigDecimal("50")), anyList())).thenReturn(List.of(p));
 
@@ -211,7 +217,8 @@ class CatalogMenuTest {
     @Test
     @DisplayName("Should handle searching products by keyword successfully")
     void testHandleSearching_Success() {
-        Product p = new Product(1L, "Smart TV", BigDecimal.valueOf(800));
+        // ОНОВЛЕНО
+        Product p = new Product(1L, "Smart TV", BigDecimal.valueOf(800), 1L, 2);
         when(marketPlaceServiceMock.getAllProducts()).thenReturn(List.of(p));
         when(filterProductsServiceMock.filterProductsByName(eq("TV"), anyList())).thenReturn(List.of(p));
 

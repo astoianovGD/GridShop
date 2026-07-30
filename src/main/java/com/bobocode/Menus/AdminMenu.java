@@ -159,13 +159,11 @@ public final class AdminMenu {
 
         switch (option) {
             case "1" -> {
-                System.out.println("Enter new First Name:");
                 staff.setFirstName(InputValidator.getValidName(
                         scanner, "First Name")
                 );
             }
             case "2" -> {
-                System.out.println("Enter new Last Name:");
                 staff.setLastName(InputValidator.getValidName(
                         scanner, "Last Name")
                 );
@@ -177,7 +175,6 @@ public final class AdminMenu {
                 System.out.println("Email updated!");
             }
             case "4" -> {
-                System.out.println("Enter new Password ");
                 staff.setPassword(InputValidator.getValidPassword(scanner));
             }
             case "0" -> {

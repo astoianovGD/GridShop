@@ -1,112 +1,94 @@
 package com.bobocode.Services.User;
 
 import com.bobocode.Entities.Users.AbstractUser;
+import com.bobocode.Entities.Users.Admin;
 import com.bobocode.Entities.Users.User;
+import com.bobocode.Enums.Gender;
 import com.bobocode.Exceptions.EntityNotFoundException;
-import org.junit.jupiter.api.DisplayName;
+import com.bobocode.Utility.JdbcTemplate;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Test
-    @DisplayName("Should throw NullPointerException immediately upon creation if map is null")
-    void testNullMap() {
-        // @NotNull annotation,
-        //  (Fail-Fast)
-        NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> new AuthService(null),
-                "Creating AuthService with null map should throw NullPointerException");
+    @Mock
+    private JdbcTemplate jdbcTemplate;
 
-        assertTrue(exception.getMessage().contains("is marked non-null but is null"),
-                "Exception message should indicate the null validation failure");
+    @InjectMocks
+    private AuthService authService;
+
+    @Test
+    void signIn_WhenAdminCredentialsValid_ShouldReturnAdminAndActivate() throws SQLException {
+        ResultSet rs = mock(ResultSet.class);
+        when(rs.getString("role_name")).thenReturn("ADMIN");
+        when(rs.getLong("user_id")).thenReturn(1L);
+        when(rs.getString("email")).thenReturn("admin@test.com");
+        when(rs.getString("password")).thenReturn("pass");
+        when(rs.getString("lastname")).thenReturn("Doe");
+        when(rs.getString("firstname")).thenReturn("John");
+
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq("admin@test.com"), eq("pass")))
+                .thenAnswer(invocation -> {
+                    Function<ResultSet, AbstractUser> mapper = invocation.getArgument(1);
+                    return mapper.apply(rs);
+                });
+
+        AbstractUser result = authService.signIn("admin@test.com", "pass");
+
+        assertNotNull(result);
+        Admin admin =assertInstanceOf(Admin.class, result);
+        assertEquals(1L, admin.getId());
+
+        verify(jdbcTemplate, times(1)).execute(anyString(), (Object[]) any());
     }
 
     @Test
-    @DisplayName("Should throw EntityNotFoundException when password is null")
-    void testNullPassword() {
-        // Arrange
-        User mockUser = new User();
-        mockUser.setEmail("test@email.com");
-        mockUser.setPassword("password123");
+    void signIn_WhenUserCredentialsValid_ShouldReturnUserWithDetails() throws SQLException {
+        ResultSet rs = mock(ResultSet.class);
+        when(rs.getString("role_name")).thenReturn("USER");
+        when(rs.getLong("user_id")).thenReturn(2L);
+        when(rs.getString("email")).thenReturn("user@test.com");
+        when(rs.getString("password")).thenReturn("pass");
+        when(rs.getString("lastname")).thenReturn("Smith");
+        when(rs.getString("firstname")).thenReturn("Jane");
+        when(rs.getInt("age")).thenReturn(25);
+        when(rs.getString("gender")).thenReturn("FEMALE");
 
-        Map<Long, AbstractUser> allUsers = Map.of(1L, mockUser);
-        AuthService authService = new AuthService(allUsers);
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq("user@test.com"), eq("pass")))
+                .thenAnswer(invocation -> {
+                    Function<ResultSet, AbstractUser> mapper = invocation.getArgument(1);
+                    return mapper.apply(rs);
+                });
 
-        // Act & Assert
-        assertThrows(EntityNotFoundException.class,
-                () -> authService.signIn("test@email.com", null),
-                "Should throw EntityNotFoundException for null password");
+        AbstractUser result = authService.signIn("user@test.com", "pass");
+
+        assertNotNull(result);
+        User regularUser = assertInstanceOf(User.class, result);
+        assertEquals(25, regularUser.getAge());
+        assertEquals(Gender.FEMALE, regularUser.getGender());
     }
 
     @Test
-    @DisplayName("Should throw EntityNotFoundException when email is null")
-    void testNullEmail() {
-        // Arrange
-        User mockUser = new User();
-        mockUser.setEmail("test@email.com");
-        mockUser.setPassword("password123");
+    void signIn_WhenInvalidCredentials_ShouldThrowEntityNotFoundException() {
+        when(jdbcTemplate.findOne(anyString(), any(Function.class), eq("wrong@test.com"), eq("wrong")))
+                .thenReturn(null);
 
-        Map<Long, AbstractUser> allUsers = Map.of(1L, mockUser);
-        AuthService authService = new AuthService(allUsers);
-
-        // Act & Assert
-        assertThrows(EntityNotFoundException.class,
-                () -> authService.signIn(null, "password123"),
-                "Should throw EntityNotFoundException for null email");
-    }
-
-    @Test
-    @DisplayName("Should successfully sign in and return user when email and password match")
-    void testSuccessfulSignIn() {
-        // Arrange
-        User expectedUser = new User();
-        expectedUser.setId(10L);
-        expectedUser.setEmail("johndoe@bobocode.com");
-        expectedUser.setPassword("superSecretPass123");
-        expectedUser.setFirstName("John");
-
-        Map<Long, AbstractUser> allUsers = Map.of(expectedUser.getId(), expectedUser);
-        AuthService authService = new AuthService(allUsers);
-
-        // Act
-        AbstractUser actualUser = authService.signIn("johndoe@bobocode.com", "superSecretPass123");
-
-        // Assert
-        assertNotNull(actualUser, "The returned user should not be null");
-        assertEquals(expectedUser, actualUser, "The returned user should be the exact same object from the map");
-        assertEquals("johndoe@bobocode.com", actualUser.getEmail(), "Emails should match");
-        assertEquals("John", actualUser.getFirstName(), "First names should match");
-    }
-
-    @Test
-    @DisplayName("Should throw EntityNotFoundException when credentials do not match")
-    void testInvalidCredentials() {
-        // Arrange
-        User mockUser = new User();
-        mockUser.setEmail("user@bobocode.com");
-        mockUser.setPassword("correctPassword");
-
-        Map<Long, AbstractUser> allUsers = Map.of(1L, mockUser);
-        AuthService authService = new AuthService(allUsers);
-
-        // Act & Assert
-        // 1. correct email, incorrect password
-        assertThrows(EntityNotFoundException.class,
-                () -> authService.signIn("user@bobocode.com", "wrongPassword"),
-                "Should throw exception for wrong password");
-
-        // 2. incorrect email,  correct password
-        assertThrows(EntityNotFoundException.class,
-                () -> authService.signIn("wrong@bobocode.com", "correctPassword"),
-                "Should throw exception for wrong email");
-
-        // 3. incorrect email and incorrect password
-        assertThrows(EntityNotFoundException.class,
-                () -> authService.signIn("wrong@bobocode.com", "wrongPassword"),
-                "Should throw exception for wrong email and wrong password");
+        assertThrows(EntityNotFoundException.class, () ->
+                authService.signIn("wrong@test.com", "wrong")
+        );
+        verify(jdbcTemplate, never()).execute(anyString(), (Object[]) any());
     }
 }

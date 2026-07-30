@@ -155,15 +155,21 @@ public final class CatalogMenu {
      * @param products the list of products to display
      */
     public void catalogAllProducts(final List<Product> products) {
-
         if (products.isEmpty()) {
             System.out.println("Marketplace is empty right now.");
         } else {
             System.out.println("--- Available Products ---");
             products.forEach(product -> {
-                System.out.println("ID: " + product.getId()
-                        + " | Name: " + product.getName()
-                        + " | Price: $" + product.getPrice());
+                if (product.getQuantity() > 0) {
+                    System.out.println("ID: " + product.getId()
+                            + " | Name: " + product.getName()
+                            + " | Price: $" + product.getPrice()
+                            + " | Quantity: " + product.getQuantity() + " pcs");
+                } else {
+                    System.out.println("ID: " + product.getId()
+                            + " | Name: " + product.getName()
+                            + " | Price: $" + product.getPrice());
+                }
             });
             System.out.println("--------------------------");
         }

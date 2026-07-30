@@ -13,7 +13,8 @@ CREATE TABLE users
     firstname VARCHAR(100)        NOT NULL,
     age       INT,
     gender    VARCHAR(20),
-    role_id   BIGINT NOT NULL REFERENCES roles(role_id)
+    role_id   BIGINT              NOT NULL REFERENCES roles (role_id),
+    is_active BOOLEAN             DEFAULT true
 );
 
 CREATE TABLE categories
@@ -24,10 +25,11 @@ CREATE TABLE categories
 
 CREATE TABLE products
 (
-    product_id BIGSERIAL PRIMARY KEY,
-    name       VARCHAR(255)   NOT NULL,
-    price      NUMERIC(19, 2) NOT NULL,
-    category_id BIGINT NOT NULL REFERENCES categories(category_id)
+    product_id  BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(255)   NOT NULL,
+    price       NUMERIC(19, 2) NOT NULL,
+    category_id BIGINT         NOT NULL REFERENCES categories (category_id),
+    is_active   BOOLEAN        DEFAULT true
 );
 
 CREATE TABLE orders
@@ -43,7 +45,7 @@ CREATE TABLE order_items
     order_id          BIGINT         NOT NULL REFERENCES orders (order_id),
     product_id        BIGINT         NOT NULL REFERENCES products (product_id),
     price_at_purchase NUMERIC(19, 2) NOT NULL,
-    quantity INT NOT NULL CHECK (quantity > 0)
+    quantity          INT            NOT NULL CHECK (quantity > 0)
 );
 
 CREATE TABLE bucket
@@ -56,9 +58,22 @@ CREATE TABLE bucket_items
 (
     bucket_item_id BIGSERIAL PRIMARY KEY,
     bucket_id      BIGINT NOT NULL REFERENCES bucket (bucket_id),
-    product_id     BIGINT NOT NULL REFERENCES products (product_id),
+    product_id     BIGINT NOT NULL REFERENCES products (product_id) ON DELETE CASCADE,
     quantity       INT    NOT NULL,
 
     CONSTRAINT uq_bucket_product
         UNIQUE (bucket_id, product_id)
 );
+
+
+--some creation
+INSERT INTO roles (name)
+VALUES ('ADMIN'),
+       ('STAFF'),
+       ('USER') ON CONFLICT (name) DO NOTHING;
+
+
+INSERT INTO categories (name)
+VALUES ('Electronics'),
+       ('Clothing'),
+       ('Books') ON CONFLICT (name) DO NOTHING;

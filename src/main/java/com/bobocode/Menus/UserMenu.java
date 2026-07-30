@@ -6,6 +6,7 @@ import com.bobocode.Enums.Gender;
 import com.bobocode.Exceptions.EntityNotFoundException;
 import com.bobocode.Services.Products.BucketService;
 import com.bobocode.Services.Products.MarketPlaceService;
+import com.bobocode.Services.Products.OrderService;
 import com.bobocode.Services.User.UserConsoleViewService;
 import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
@@ -44,6 +45,10 @@ public final class UserMenu {
     /** The bucket menu. */
     @NonNull
     private final BucketMenu bucketMenu;
+
+    /** The order service. */
+    @NonNull
+    private final OrderService orderService;
 
     /**
      * Displays the user menu and handles user input.
@@ -103,12 +108,33 @@ public final class UserMenu {
                     long id = InputValidator.getValidId(
                             scanner, "Enter id of product to add to Bucket:"
                     );
+
+                    System.out.println("Enter quantity:");
+                    int amount;
                     try {
-                        Product productToAdd = marketPlaceService
-                                .getProductById(id);
+                        amount = Integer.parseInt(scanner.nextLine());
+                        if (amount <= 0) {
+                            throw new NumberFormatException();
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println(
+                                "Invalid quantity! Must be a positive number."
+                        );
+                        continue;
+                    }
+
+                    try {
+                        Product productToAdd =
+                                marketPlaceService.getProductById(id);
+
                         bucketService.addProductToBucket(
-                                user.getBucket(), productToAdd);
-                        System.out.println("Product added to bucket!");
+                                user.getId(), productToAdd.getId(), amount
+                        );
+
+                        System.out.println(
+                                amount + "x " + productToAdd.getName()
+                                        + " added to bucket!"
+                        );
                     } catch (EntityNotFoundException e) {
                         System.out.println(e.getMessage());
                     }
@@ -139,8 +165,15 @@ public final class UserMenu {
             }
             switch (option) {
                 case "1" -> editUserProfile(scanner, user);
-                case "2" -> userConsoleViewService
-                        .printUserPurchaseHistory(user);
+                case "2" -> {
+                    var history = orderService.getOrderHistory(user.getId());
+                    if (history.isEmpty()) {
+                        System.out.println("Purchase history is empty.");
+                    } else {
+                        System.out.println("\n--- Purchase History ---");
+                        history.forEach(System.out::println);
+                    }
+                }
                 default -> System.out.println("Invalid option!");
             }
         }
@@ -188,7 +221,10 @@ public final class UserMenu {
             case "6" -> user.setPassword(InputValidator
                     .getValidPassword(scanner));
 
-            case "0" -> System.out.println("Editing cancelled.");
+            case "0" -> {
+                System.out.println("Editing cancelled.");
+                return;
+            }
             default -> System.out.println("Invalid option!");
         }
 
