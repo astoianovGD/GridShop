@@ -23,7 +23,10 @@ import com.bobocode.Services.User.UserService;
 import com.bobocode.Utility.EmailValidator;
 import com.bobocode.Utility.InputValidator;
 import com.bobocode.Utility.JdbcTemplate;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -49,9 +52,21 @@ public final class Main {
         String dbUser = System.getenv("POSTGRES_USER");
         String dbPassword = System.getenv("POSTGRES_PASSWORD");
 
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(
-                dbUrl, dbUser, dbPassword
-        );
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(dbUrl);
+        config.setUsername(dbUser);
+        config.setPassword(dbPassword);
+
+
+
+        config.setMaximumPoolSize(10); //max 10 connection in a moment
+        config.setMinimumIdle(2);      //minimum 2 connection ready
+        config.setIdleTimeout(30000);  //lifetime
+
+
+        DataSource dataSource = new HikariDataSource(config);
+
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
         UserService userService = new UserService(jdbcTemplate);
         StaffService staffService = new StaffService(jdbcTemplate);

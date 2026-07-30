@@ -7,9 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,7 +29,6 @@ class CategoryServiceTest {
 
         categoryService.addNewCategory("Electronics");
 
-        // Явно вказуємо тип Object..., щоб вирішити конфлікт перевантажених методів execute
         verify(jdbcTemplate, times(1)).execute(anyString(), (Object[]) any());
     }
 

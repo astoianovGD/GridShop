@@ -15,7 +15,14 @@ class JdbcTemplateTest {
     @BeforeEach
     void setUp() throws SQLException {
         String h2Url = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1";
-        db = new JdbcTemplate(h2Url, "sa", "");
+
+        com.zaxxer.hikari.HikariConfig config = new com.zaxxer.hikari.HikariConfig();
+        config.setJdbcUrl(h2Url);
+        config.setUsername("sa");
+        config.setPassword("");
+        javax.sql.DataSource dataSource = new com.zaxxer.hikari.HikariDataSource(config);
+
+        db = new JdbcTemplate(dataSource);
 
         db.execute("DROP TABLE IF EXISTS roles");
         db.execute("CREATE TABLE roles (role_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50))");

@@ -349,6 +349,25 @@ mvn exec:java
 ```
 
 ---
+## 7. Time Zone (Optional)
+
+If you encounter a PostgreSQL error related to the time zone (for example, `invalid value for parameter "TimeZone"`), add the following VM option to your IDE run configuration:
+
+```text
+-Duser.timezone=Europe/Kyiv
+```
+
+### IntelliJ IDEA
+
+1. Open **Run → Edit Configurations...**
+2. Select your application run configuration.
+3. In the **VM options** field, add:
+
+```text
+-Duser.timezone=Europe/Kyiv
+```
+
+Then run the application again.
 
 # 📖 Design Principles
 

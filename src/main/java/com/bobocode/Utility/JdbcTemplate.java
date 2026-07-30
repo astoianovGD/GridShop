@@ -1,7 +1,9 @@
 package com.bobocode.Utility;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.RequiredArgsConstructor;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,33 +17,11 @@ import java.util.function.Function;
 /**
  * Utility class for handling JDBC operations.
  */
+@RequiredArgsConstructor
 public final class JdbcTemplate {
 
-    /** The database connection URL. */
-    private final String dbUrl;
+    private final DataSource dataSource;
 
-    /** The database username. */
-    private final String dbUser;
-
-    /** The database password. */
-    private final String dbPassword;
-
-    /**
-     * Constructs a new JdbcTemplate with database credentials.
-     *
-     * @param url      the database URL
-     * @param user     the database username
-     * @param password the database password
-     */
-    public JdbcTemplate(
-            final String url,
-            final String user,
-            final String password
-    ) {
-        this.dbUrl = url;
-        this.dbUser = user;
-        this.dbPassword = password;
-    }
 
     /**
      * Establishes a connection to the database.
@@ -50,7 +30,7 @@ public final class JdbcTemplate {
      * @throws SQLException if a database access error occurs
      */
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+        return dataSource.getConnection();
     }
 
     /**
