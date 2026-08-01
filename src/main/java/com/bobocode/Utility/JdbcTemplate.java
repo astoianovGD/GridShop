@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,6 +19,9 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public final class JdbcTemplate {
 
+    /**
+     * Data source.
+     */
     private final DataSource dataSource;
 
 
@@ -138,5 +140,34 @@ public final class JdbcTemplate {
             );
         }
         return list;
+    }
+
+    /**
+     * Executes a set of operations within a single database transaction.
+     *
+     * @param action the consumer
+     *               that performs database operations using a Connection
+     */
+    public void doInTransaction(final Consumer<Connection> action) {
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                action.accept(conn);
+                conn.commit();
+            } catch (Exception e) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    e.addSuppressed(rollbackEx);
+                }
+                throw new RuntimeException(
+                        "Transaction failed and was rolled back", e
+                );
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Error managing transaction connection", e
+            );
+        }
     }
 }

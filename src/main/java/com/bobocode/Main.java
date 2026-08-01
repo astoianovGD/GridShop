@@ -25,6 +25,7 @@ import com.bobocode.Utility.InputValidator;
 import com.bobocode.Utility.JdbcTemplate;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -35,6 +36,16 @@ import java.util.Scanner;
  */
 public final class Main {
 
+    /**
+     * Max Pool size.
+     */
+    private static final int MAX_POOL_SIZE = 10;
+
+    /**
+     * Time out.
+     */
+    private static final long IDLE_TIMEOUT_MS = 30000L;
+
     private Main() {
     }
 
@@ -43,6 +54,11 @@ public final class Main {
      *
      * @param args command line arguments
      */
+    @SuppressFBWarnings(
+            value = "HARD_CODE_PASSWORD",
+            justification = "Password is retrieved dynamically "
+                    + "from environment variables, not hardcoded."
+    )
     public static void main(final String[] args) {
         Scanner scanner = new Scanner(
                 System.in, java.nio.charset.StandardCharsets.UTF_8
@@ -59,9 +75,10 @@ public final class Main {
 
 
 
-        config.setMaximumPoolSize(10); //max 10 connection in a moment
+        config.setMaximumPoolSize(MAX_POOL_SIZE);
+        //max 10 connection in a moment
         config.setMinimumIdle(2);      //minimum 2 connection ready
-        config.setIdleTimeout(30000);  //lifetime
+        config.setIdleTimeout(IDLE_TIMEOUT_MS);  //lifetime
 
 
         DataSource dataSource = new HikariDataSource(config);
