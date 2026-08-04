@@ -1,8 +1,19 @@
-# 🛍️ GridShop Console Marketplace
+# 🛍️ GridShop
 
-GridShop is a Java console marketplace application with **role-based access control**. The project demonstrates object-oriented programming, layered architecture, authentication, CRUD operations, PostgreSQL integration, Docker, custom exception handling, and unit testing.
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue)
+![Docker](https://img.shields.io/badge/Docker-2496ED)
+![JUnit5](https://img.shields.io/badge/JUnit-5-success)
+![Mockito](https://img.shields.io/badge/Mockito-Test-green)
+![Maven](https://img.shields.io/badge/Maven-3-C71A36)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-The application is built using **Java Core** with **PostgreSQL** for data persistence and follows a clean layered architecture without using external frameworks such as Spring.
+GridShop is a **Spring Boot console marketplace application** with **role-based access control**.
+
+The project demonstrates modern Java backend development practices, including layered architecture, dependency injection, Spring JDBC, PostgreSQL integration, Docker, authentication, CRUD operations, custom exception handling, unit testing, and static code analysis.
+
+Although the application uses Spring Boot, it remains a **console application**, making it a good example of combining Java Core concepts with modern backend technologies.
 
 ---
 
@@ -10,18 +21,21 @@ The application is built using **Java Core** with **PostgreSQL** for data persis
 
 ## 🔐 Authentication
 
-- User Registration
-- Sign In
+- User registration
+- User sign in
 - Email format validation
 - Unique email validation
 - Role-based authorization
+- Automatic first administrator creation
 
 ---
 
-## 👑 Admin
+## 👑 Administrator
+
+Administrator capabilities include:
 
 - View all staff members
-- Add new staff members
+- Create new staff members
 - Edit staff information
 - Remove staff members
 
@@ -29,58 +43,70 @@ The application is built using **Java Core** with **PostgreSQL** for data persis
 
 ## 👨‍💼 Staff
 
-- Browse marketplace products
+Staff members can:
+
+- Browse products
+- Search products
+- Filter products
+- Sort products
 - Add products
 - Edit products
 - Remove products
-- Manage product categories
-- Sort products
-- Filter products
-- Search products
+- Manage categories
 - View user profiles
 - View users' shopping carts
-- View users' purchase history
+- View purchase history
 
 ---
 
 ## 👤 User
 
-- Browse marketplace products
+Users can:
+
+- Browse products
 - Browse products by category
-- Sort products
-- Filter products
 - Search products
+- Filter products
+- Sort products
 - Add products to shopping cart
 - Remove products from shopping cart
 - Change product quantities
 - Purchase products
 - View purchase history
-- Edit personal information
+- Edit personal profile
 - Delete account
 
 ---
 
 # 🛒 Product Operations
 
-Products support:
+Supported functionality:
 
-- Searching by product name
-- Filtering by:
-  - Category
-  - First letter
-  - Minimum price
-  - Maximum price
-- Sorting by:
-  - Price (Ascending / Descending)
-  - Name (A–Z / Z–A)
+### Search
+
+- Product name
+
+### Filter
+
+- Category
+- First letter
+- Minimum price
+- Maximum price
+
+### Sort
+
+- Price (Ascending)
+- Price (Descending)
+- Name (A–Z)
+- Name (Z–A)
 
 ---
 
 # 🗄️ Database
 
-The application uses **PostgreSQL** for persistent data storage.
+The application stores all data in **PostgreSQL**.
 
-### Main Entities
+### Database Entities
 
 - Roles
 - Users
@@ -91,133 +117,191 @@ The application uses **PostgreSQL** for persistent data storage.
 - Orders
 - Order Items
 
-The database schema is initialized automatically using **init.sql** when the Docker container starts for the first time.
+The database is initialized automatically using the SQL script located at:
+
+```text
+docker/postgres/init.sql
+```
+
+During the first startup Docker automatically creates:
+
+- database schema
+- tables
+- relationships
+- default roles
+- default categories
 
 ---
 
 # 🐳 Docker
 
-The project includes a complete Docker Compose configuration.
+The project contains a complete Docker environment.
 
-### Services
+### Included services
 
 - PostgreSQL
 - pgAdmin 4
 
-Start the application infrastructure:
+Start infrastructure
 
 ```bash
 docker compose up -d
 ```
 
-Stop containers:
+Stop infrastructure
 
 ```bash
 docker compose down
 ```
 
+View running containers
+
+```bash
+docker ps
+```
+
 ---
 
-# 🏗️ Project Structure
+# 🌱 Spring Boot
+
+The project uses Spring Boot for:
+
+- Dependency Injection
+- Bean Management
+- Application Configuration
+- JDBC Configuration
+- Connection Pooling (HikariCP)
+- Application Startup using `CommandLineRunner`
+
+The console session starts automatically after the Spring context is initialized.
+
+---
+
+# 🏗️ Architecture
+
+The project follows a layered architecture.
 
 ```text
-src
-├── main
-│   └── java
-│       └── com.bobocode
-│           ├── Entities
-│           │   ├── Menus
-│           │   ├── Products
-│           │   └── Users
-│           │
-│           ├── Services
-│           │   ├── Products
-│           │   └── User
-│           │
-│           ├── Utility
-│           ├── Exceptions
-│           ├── Enums
-│           └── Main.java
-│
-├── docker
-│   └── postgres
-│       └── init.sql
-│
-├── docker-compose.yml
-└── .env
+Console Menus
+        │
+        ▼
+Business Services
+        │
+        ▼
+Repositories (Spring JDBC)
+        │
+        ▼
+PostgreSQL Database
 ```
 
 ---
 
-# 🏛️ Architecture
+## Layers
 
-```
-Console (Menus)
-        │
-        ▼
-Business Logic (Services)
-        │
-        ▼
-Database Layer (JDBC)
-        │
-        ▼
-PostgreSQL
-```
+### Console
 
-### Responsibilities
+Responsible for user interaction.
 
-### Menus
+Examples:
 
-Responsible for user interaction through the console.
+- Login menu
+- User menu
+- Staff menu
+- Administrator menu
+
+---
 
 ### Services
 
-Contain the application's business logic.
+Contain business logic.
 
-### Database
+Examples:
 
-Handles data persistence using PostgreSQL.
+- Authentication
+- Product management
+- User management
+- Shopping cart management
+- Purchase processing
+
+---
+
+### Repository Layer
+
+Responsible for communication with PostgreSQL.
+
+Implemented using:
+
+- Spring JDBC
+- JdbcTemplate
+- Prepared Statements
+
+---
 
 ### Entities
 
-Represent domain models and application data.
+Represent domain models.
+
+Examples:
+
+- User
+- Staff
+- Admin
+- Product
+- Category
+- Bucket
+- Order
+
+---
 
 ### Utility
 
-Contains helper and validation classes.
+Contains helper classes such as:
+
+- Validators
+- Input helpers
+- Formatting utilities
+
+---
 
 ### Exceptions
 
-Contains custom exceptions for error handling.
+Contains custom application exceptions.
 
 ---
 
 # 🧪 Testing
 
-The project includes comprehensive **unit testing** using **JUnit 5** and **Mockito**.
+The project includes comprehensive unit testing.
+
+### Frameworks
+
+- Spring Boot Test
+- JUnit 5
+- Mockito
+- H2 Database
 
 ### Tested Components
 
+- Authentication
 - Product Services
 - User Services
-- Authentication
+- Category Services
 - Utility classes
-- Entity models
 - Console menus
-- Main class
+- Main application
 
-### Test Coverage Includes
+### Test Coverage
 
-- Business logic
+Includes testing of:
+
 - CRUD operations
+- Validation
+- Business logic
 - Authentication
 - Product filtering
 - Product sorting
-- Category operations
-- Shopping cart logic
-- Purchase operations
-- User management
-- Email validation
+- Shopping cart
+- Purchase logic
 - Exception handling
 
 ---
@@ -227,18 +311,26 @@ The project includes comprehensive **unit testing** using **JUnit 5** and **Mock
 ## Core
 
 - Java 21
-- Maven
+- Spring Boot 3
+- Spring JDBC
 - PostgreSQL
-- JDBC
+- HikariCP
+- Maven
 - Lombok
 - Docker
 - Docker Compose
 
+---
+
 ## Testing
 
+- Spring Boot Test
 - JUnit 5
 - Mockito
+- H2 Database
 - JaCoCo
+
+---
 
 ## Code Quality
 
@@ -247,45 +339,52 @@ The project includes comprehensive **unit testing** using **JUnit 5** and **Mock
 - SpotBugs
 - FindSecBugs
 
+---
+
 ## Java Features
 
+- Object-Oriented Programming
 - Stream API
 - Collections Framework
 - BigDecimal
+- Dependency Injection
 - Custom Exceptions
-
----
-
+- Generics
+- Java Records (if applicable)
 # ✅ Validation
 
 The application validates:
 
 - Email format
 - Email uniqueness
-- Product existence
 - User existence
+- Product existence
 - Category existence
 - Numeric input
 - Gender values
 - Product quantity
 
+Validation errors are handled using custom exceptions and informative console messages.
+
 ---
 
 # 📦 Initial Database Data
 
-The application automatically creates default data during database initialization.
+During the first startup, the application automatically creates default data.
 
-### Roles
+## Roles
 
 - ADMIN
 - STAFF
 - USER
 
-### Categories
+## Categories
 
 - Electronics
 - Clothing
 - Books
+
+The first administrator account is created interactively if no administrator exists in the database.
 
 ---
 
@@ -294,8 +393,10 @@ The application automatically creates default data during database initializatio
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/StoyanowAlexey/GridShop.git
+git clone https://github.com/astoianovGD/GridShop.git
 ```
+
+---
 
 ## 2. Navigate to the project
 
@@ -303,11 +404,17 @@ git clone https://github.com/StoyanowAlexey/GridShop.git
 cd GridShop
 ```
 
+---
+
 ## 3. Configure Environment Variables
 
 Create a `.env` file in the project root and provide your own configuration values.
 
-> **⚠️ Important:** The `.env` file contains sensitive information (such as database credentials) and **must not** be committed to version control. Make sure it is included in your `.gitignore` file.
+> **⚠️ Important**
+>
+> The `.env` file contains sensitive information such as database credentials.
+> Never commit this file to version control.
+> Make sure it is included in your `.gitignore`.
 
 Example:
 
@@ -317,10 +424,12 @@ POSTGRES_PASSWORD=your_secure_password
 POSTGRES_DB=your_database_name
 
 PGADMIN_DEFAULT_EMAIL=your_email@example.com
-PGADMIN_PASSWORD=your_pgadmin_password
+PGADMIN_PASSWORD=your_secure_password
 
 DB_URL=jdbc:postgresql://localhost:5432/your_database_name
 ```
+
+---
 
 ## 4. Start PostgreSQL and pgAdmin
 
@@ -328,80 +437,187 @@ DB_URL=jdbc:postgresql://localhost:5432/your_database_name
 docker compose up -d
 ```
 
+Verify that the containers are running:
+
+```bash
+docker ps
+```
+
+---
+
 ## 5. Build the project
 
 ```bash
 mvn clean install
 ```
 
+---
+
 ## 6. Run the application
 
-Run
-
-```
-Main.java
-```
-
-or
+Using Maven:
 
 ```bash
-mvn exec:java
+mvn spring-boot:run
 ```
+
+or run the `Main` class directly from your IDE.
 
 ---
-## 7. Time Zone (Optional)
 
-If you encounter a PostgreSQL error related to the time zone (for example, `invalid value for parameter "TimeZone"`), add the following VM option to your IDE run configuration:
+## 7. Open pgAdmin (Optional)
+
+After starting Docker, pgAdmin is available at:
+
+```
+http://localhost:8080
+```
+
+Log in using the credentials specified in your `.env` file.
+
+---
+
+## 8. Time Zone Configuration (Optional)
+
+If PostgreSQL reports an error similar to:
 
 ```text
--Duser.timezone=Europe/Kyiv
+invalid value for parameter "TimeZone"
 ```
+
+set the JVM time zone.
 
 ### IntelliJ IDEA
 
-1. Open **Run → Edit Configurations...**
-2. Select your application run configuration.
-3. In the **VM options** field, add:
+Open:
+
+```
+Run → Edit Configurations
+```
+
+Add the following VM option:
 
 ```text
 -Duser.timezone=Europe/Kyiv
 ```
 
-Then run the application again.
+Alternatively, the application already sets the default time zone programmatically during startup.
+
+---
+
+# 📂 Project Structure
+
+```text
+src
+├── main
+│   ├── java
+│   │   └── com.bobocode
+│   │       ├── entities
+│   │       ├── repositories
+│   │       ├── services
+│   │       ├── menus
+│   │       ├── utility
+│   │       ├── exceptions
+│   │       ├── config
+│   │       └── Main.java
+│   │
+│   └── resources
+│       └── application.properties
+│
+├── test
+│   └── java
+│
+├── docker
+│   └── postgres
+│       └── init.sql
+│
+├── docker-compose.yml
+├── pom.xml
+└── .env
+```
+
+---
 
 # 📖 Design Principles
 
 This project demonstrates:
 
 - Object-Oriented Programming (OOP)
+- SOLID Principles
 - Encapsulation
 - Separation of Concerns
-- Single Responsibility Principle (SRP)
 - Layered Architecture
-- Manual Dependency Injection
+- Dependency Injection (Spring IoC)
+- Repository Pattern
 - JDBC Data Access
 - Custom Exception Handling
-- Stream API
-- Clean Code principles
+- Clean Code Principles
+
+---
+
+# 🔍 Static Code Analysis
+
+The project uses multiple tools to ensure high code quality.
+
+- Checkstyle
+- PMD
+- SpotBugs
+- FindSecBugs
+- JaCoCo
+
+These tools are executed during the Maven verification phase.
+
+Run manually:
+
+```bash
+mvn verify
+```
 
 ---
 
 # 🔮 Future Improvements
 
-- Spring Boot
+Possible future enhancements include:
+
 - Spring Data JPA
 - Hibernate ORM
 - REST API
+- Swagger / OpenAPI
 - JWT Authentication
 - BCrypt Password Hashing
-- Inventory Management
 - Product Images
-- Logging (SLF4J + Logback)
+- Inventory Management
 - Pagination
+- Logging (SLF4J + Logback)
 - Liquibase
+- Flyway
 - GitHub Actions CI/CD
 - Integration Testing
 - Testcontainers
+- Email Notifications
+- Product Reviews
+- Favorites / Wishlist
+
+---
+
+# 🤝 Contributing
+
+Contributions, suggestions, and improvements are welcome.
+
+If you would like to contribute:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Open a Pull Request.
+
+---
+
+# 📄 License
+
+This project is intended for educational purposes.
+
+Feel free to use it as a reference for learning Java, Spring Boot, PostgreSQL, and software architecture.
 
 ---
 
@@ -411,4 +627,5 @@ This project demonstrates:
 
 Java Backend Developer
 
-GitHub: https://github.com/StoyanowAlexey
+GitHub:
+https://github.com/astoianovGD
