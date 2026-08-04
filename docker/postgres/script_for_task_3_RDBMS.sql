@@ -1,4 +1,3 @@
--- 1. Створюємо 1 мільйон користувачів
 INSERT INTO users (email, password, lastname, firstname, age, gender, role_id, is_active)
 SELECT
     'user_' || i || '@example.com',
@@ -11,7 +10,6 @@ SELECT
     true
 FROM generate_series(1, 1000000) AS i;
 
--- 2. Створюємо 50 тисяч товарів
 INSERT INTO products (name, price, category_id, is_active)
 SELECT
     'Product ' || i,
@@ -20,18 +18,15 @@ SELECT
     true
 FROM generate_series(1, 50000) AS i;
 
--- 3. Створюємо кошики для користувачів
 INSERT INTO bucket (user_id)
 SELECT user_id FROM users;
 
--- 4. Створюємо 2 мільйони замовлень
 INSERT INTO orders (user_id, purchase_date)
 SELECT
     (random() * 999999 + 1)::bigint,
     NOW() - (random() * interval '365 days')
 FROM generate_series(1, 2000000);
 
--- 5. Створюємо 5 мільйонів елементів замовлень
 INSERT INTO order_items (order_id, product_id, price_at_purchase, quantity)
 SELECT
     (random() * 1999999 + 1)::bigint,
