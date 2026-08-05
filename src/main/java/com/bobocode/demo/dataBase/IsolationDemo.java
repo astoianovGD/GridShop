@@ -1,4 +1,4 @@
-package com.bobocode.demo;
+package com.bobocode.demo.dataBase;
 
 import com.bobocode.utility.CustomJdbcTemplate;
 import lombok.RequiredArgsConstructor;

@@ -12,6 +12,7 @@ import java.util.TimeZone;
  */
 @SpringBootApplication
 @RequiredArgsConstructor
+//@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}) if you need to disable for example DataSourceAutoConfiguration.class
 public class Main implements CommandLineRunner {
 
     /** Session manager for handling console interaction loops. */
