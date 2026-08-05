@@ -37,7 +37,6 @@ public class EnvironmentAndBeansDemoRunner implements CommandLineRunner {
                 if (propertySource instanceof EnumerablePropertySource<?> enumerable) {
                     System.out.println("--- PropertySource: " + propertySource.getName() + " ---");
                     for (String propertyName : enumerable.getPropertyNames()) {
-                        // Щоб не виводити чутливі дані повністю, можна замаскувати паролі, але для завдання виведемо все
                         System.out.println("  " + propertyName + " = " + environment.getProperty(propertyName));
                     }
                 }
