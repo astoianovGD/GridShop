@@ -13,9 +13,16 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "app.datetime")
 public class DateTimeProperties {
 
+    /** Launch date property. */
     private LocalDate launchDate;
+
+    /** Launch time property. */
     private LocalTime launchTime;
+
+    /** Launch timestamp property. */
     private LocalDateTime launchTimestamp;
+
+    /** Session timeout property. */
     private Duration sessionTimeout;
 
 }

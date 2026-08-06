@@ -34,22 +34,14 @@ public final class UserService {
                 "INSERT INTO users "
                         + "(email, password, lastname, firstname, "
                         + "age, gender, role_id) VALUES (?, ?, ?, ?, ?, ?, "
-                        + "(SELECT role_id FROM roles WHERE name = 'USER')) "
-                        + "RETURNING user_id";
+                        + "(SELECT role_id FROM roles WHERE name = 'USER'))";
 
         String genderStr = newUser.getGender() != null
                 ? newUser.getGender().name()
                 : null;
 
-        Long userId = customJdbcTemplate.findOne(insertUserSql, rs -> {
-                    try {
-                        return rs.getLong("user_id");
-                    } catch (SQLException e) {
-                        throw new RuntimeException(
-                                "Error getting user_id after registration", e
-                        );
-                    }
-                },
+        // make insert by execute
+        customJdbcTemplate.execute(insertUserSql,
                 newUser.getEmail(),
                 newUser.getPassword(),
                 newUser.getLastName(),
@@ -57,6 +49,18 @@ public final class UserService {
                 newUser.getAge(),
                 genderStr
         );
+
+        // get id by email
+        String getIdSql = "SELECT user_id FROM users WHERE email = ?";
+        Long userId = customJdbcTemplate.findOne(getIdSql, rs -> {
+            try {
+                return rs.getLong("user_id");
+            } catch (SQLException e) {
+                throw new RuntimeException(
+                        "Error getting user_id after registration", e
+                );
+            }
+        }, newUser.getEmail());
 
         if (userId != null) {
             String createBucketSql =

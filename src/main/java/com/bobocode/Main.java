@@ -1,7 +1,5 @@
 package com.bobocode;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -11,12 +9,15 @@ import java.util.TimeZone;
  * Main application class.
  */
 @SpringBootApplication
-@RequiredArgsConstructor
-//@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}) if you need to disable for example DataSourceAutoConfiguration.class
-public class Main implements CommandLineRunner {
+public class Main {
 
-    /** Session manager for handling console interaction loops. */
-    private final ConsoleSessionManager sessionManager;
+    /**
+     * Protected constructor to hide
+     * the implicit public one for utility/main classes
+     * while allowing Spring/CGLIB proxying.
+     */
+    protected Main() {
+    }
 
     /**
      * Main entry point for the Spring Boot application.
@@ -24,20 +25,9 @@ public class Main implements CommandLineRunner {
      * @param args command line arguments
      */
     public static void main(final String[] args) {
-        TimeZone.setDefault(TimeZone.getTimeZone(
-                "Europe/Kyiv"
-        ));
-
+        TimeZone.setDefault(TimeZone
+                .getTimeZone("Europe/Kyiv")
+        );
         SpringApplication.run(Main.class, args);
-    }
-
-    /**
-     * Callback used to run the application.
-     *
-     * @param args incoming command line arguments
-     */
-    @Override
-    public final void run(final String... args) {
-        sessionManager.startSession();
     }
 }

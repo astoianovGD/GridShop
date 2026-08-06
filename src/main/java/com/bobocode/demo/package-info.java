@@ -1,4 +1,4 @@
 /**
- * Demo class for testing DB.
+ * Classes for demo check.
  */
 package com.bobocode.demo;

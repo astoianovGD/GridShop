@@ -48,14 +48,27 @@ class UserServiceTest {
 
     @Test
     void registerNewUser_shouldInsertUserAndCreateBucket() {
-        when(customJdbcTemplate.findOne(any(String.class), any(), any(), any(), any(), any(), any(), any()))
+        when(customJdbcTemplate.findOne(eq("SELECT user_id FROM users WHERE email = ?"), any(), eq(testUser.getEmail())))
                 .thenReturn(1L);
 
         userService.registerNewUser(testUser);
 
-        verify(customJdbcTemplate, times(1)).findOne(any(String.class), any(), eq(testUser.getEmail()),
-                eq(testUser.getPassword()), eq(testUser.getLastName()), eq(testUser.getFirstName()),
-                eq(testUser.getAge()), eq("MALE"));
+        verify(customJdbcTemplate, times(1)).execute(
+                eq("INSERT INTO users (email, password, lastname, firstname, age, gender, role_id) VALUES (?, ?, ?, ?, ?, ?, (SELECT role_id FROM roles WHERE name = 'USER'))"),
+                eq(testUser.getEmail()),
+                eq(testUser.getPassword()),
+                eq(testUser.getLastName()),
+                eq(testUser.getFirstName()),
+                eq(testUser.getAge()),
+                eq("MALE")
+        );
+
+        verify(customJdbcTemplate, times(1)).findOne(
+                eq("SELECT user_id FROM users WHERE email = ?"),
+                any(),
+                eq(testUser.getEmail())
+        );
+
         verify(customJdbcTemplate, times(1)).execute(eq("INSERT INTO bucket (user_id) VALUES (?)"), eq(1L));
     }
 
