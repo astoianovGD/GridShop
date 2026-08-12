@@ -1,21 +1,23 @@
 package com.bobocode.services.system;
 
-import com.bobocode.entities.users.Admin;
+import com.bobocode.entities.users.Role;
+import com.bobocode.entities.users.User;
+import com.bobocode.exceptions.EntityNotFoundException;
+import com.bobocode.repositories.users.RoleRepository;
+import com.bobocode.repositories.users.UserRepository;
 import com.bobocode.utility.EmailValidator;
 import com.bobocode.utility.InputValidator;
-import com.bobocode.utility.CustomJdbcTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
 import java.util.Scanner;
 
 @Service
 @RequiredArgsConstructor
 public class SystemInitializer {
 
-    /** The JDBC template for database operations. */
-    private final CustomJdbcTemplate customJdbcTemplate;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     /**
      * Checks if an admin exists, and if not, prompts to create the first admin.
@@ -23,30 +25,21 @@ public class SystemInitializer {
      * @param scanner the scanner for reading console input
      */
     public void initializeSystem(final Scanner scanner) {
-        String checkAdminSql =
-                "SELECT EXISTS (SELECT 1 FROM users WHERE role_id = ?)";
-        Boolean adminExists = customJdbcTemplate.findOne(checkAdminSql, rs -> {
-            try {
-                return rs.getBoolean(1);
-            } catch (SQLException e) {
-                throw new RuntimeException(
-                        "Error checking admin existence", e
-                );
-            }
-        }, 1);
+        boolean adminExists = userRepository.existsByRoleName("ADMIN");
 
-        if (adminExists != null && adminExists) {
+        if (adminExists) {
             System.out.println(
                     "--- SYSTEM SETUP: Admin already exists "
                             + "in Database. Skipping setup. ---\n"
             );
         } else {
             System.out.println("--- SYSTEM SETUP: CREATE FIRST ADMIN ---");
-            Admin firstAdmin = new Admin();
-            firstAdmin.setFirstName(
+
+            User firstAdmin = new User();
+            firstAdmin.setFirstname(
                     InputValidator.getValidName(scanner, "First Name")
             );
-            firstAdmin.setLastName(
+            firstAdmin.setLastname(
                     InputValidator.getValidName(scanner, "Last Name")
             );
             firstAdmin.setEmail(
@@ -56,16 +49,18 @@ public class SystemInitializer {
                     InputValidator.getValidPassword(scanner)
             );
 
-            String adminSql = "INSERT INTO users "
-                    + "(email, password, lastname, firstname, role_id) "
-                    + "VALUES (?, ?, ?, ?, ?)";
-            customJdbcTemplate.execute(adminSql,
-                    firstAdmin.getEmail(),
-                    firstAdmin.getPassword(),
-                    firstAdmin.getLastName(),
-                    firstAdmin.getFirstName(),
-                    1
-            );
+            //admin do not need gender and age
+            firstAdmin.setActive(true);
+
+            Role adminRole = roleRepository.findByName("ADMIN")
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Default role 'ADMIN' not found in database!"
+                    ));
+
+            firstAdmin.setRole(adminRole);
+
+            userRepository.save(firstAdmin);
+
             System.out.println("Admin successfully created in Database!\n");
         }
     }

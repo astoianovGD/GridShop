@@ -1,13 +1,11 @@
 package com.bobocode;
 
-import com.bobocode.entities.users.AbstractUser;
-import com.bobocode.entities.users.Admin;
-import com.bobocode.entities.users.Staff;
 import com.bobocode.entities.users.User;
-import com.bobocode.menus.AdminMenu;
-import com.bobocode.menus.AuthMenu;
-import com.bobocode.menus.StaffMenu;
-import com.bobocode.menus.UserMenu;
+import com.bobocode.mappers.users.UserMapper;
+import com.bobocode.menus.users.AdminMenu;
+import com.bobocode.menus.system.AuthMenu;
+import com.bobocode.menus.users.StaffMenu;
+import com.bobocode.menus.users.UserMenu;
 import com.bobocode.services.system.SystemInitializer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -37,6 +35,8 @@ public class ConsoleSessionManager {
     /** System initializer for startup checks. */
     private final SystemInitializer systemInitializer;
 
+    private final UserMapper userMapper;
+
     /**
      * Starts the main console interaction loop.
      */
@@ -47,19 +47,19 @@ public class ConsoleSessionManager {
 
             // 2. Life cycle of the application
             while (true) {
-                AbstractUser loggedInUser = authMenu.menu(scanner);
+                User loggedInUser = authMenu.menu(scanner);
 
                 if (loggedInUser == null) {
                     System.out.println("Shutting down the system...");
                     break;
                 }
-
-                if (loggedInUser instanceof Admin) {
+                String roleName = loggedInUser.getRole().getName();
+                if (roleName.equals("ADMIN")) {
                     adminMenu.menu(scanner);
-                } else if (loggedInUser instanceof Staff) {
+                } else if (roleName.equals("STAFF")) {
                     staffMenu.menu(scanner);
-                } else if (loggedInUser instanceof User user) {
-                    userMenu.menu(user, scanner);
+                } else if (roleName.equals("USER")) {
+                    userMenu.menu(userMapper.toDto(loggedInUser), scanner);
                 }
             }
         }

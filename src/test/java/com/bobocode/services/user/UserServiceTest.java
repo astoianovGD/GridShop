@@ -1,175 +1,220 @@
 package com.bobocode.services.user;
 
+import com.bobocode.dto.users.UserDto;
+import com.bobocode.dto.users.UserRegistrationDto;
+import com.bobocode.entities.users.Role;
 import com.bobocode.entities.users.User;
-import com.bobocode.enums.Gender;
 import com.bobocode.exceptions.EmailAlreadyExistsException;
 import com.bobocode.exceptions.EntityNotFoundException;
-import com.bobocode.utility.CustomJdbcTemplate;
-import org.junit.jupiter.api.BeforeEach;
+import com.bobocode.mappers.users.UserMapper;
+import com.bobocode.mappers.users.UserRegistrationMapper;
+import com.bobocode.repositories.users.RoleRepository;
+import com.bobocode.repositories.users.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+public class UserServiceTest {
 
-    @Mock
-    private CustomJdbcTemplate customJdbcTemplate;
+    @Mock private UserRepository userRepository;
+    @Mock private UserMapper userMapper;
+    @Mock private UserRegistrationMapper userRegistrationMapper;
+    @Mock private RoleRepository roleRepository;
 
     @InjectMocks
     private UserService userService;
 
-    private User testUser;
+    @Test
+    void shouldRegisterNewUserSuccessfully() {
+        UserRegistrationDto regDto = new UserRegistrationDto();
+        User user = new User();
+        Role userRole = new Role();
+        userRole.setName("USER");
 
-    @BeforeEach
-    void setUp() {
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setEmail("test@gmail.com");
-        testUser.setPassword("password123");
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
-        testUser.setAge(25);
-        testUser.setGender(Gender.MALE);
+        when(userRegistrationMapper.toEntity(regDto)).thenReturn(user);
+        when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
+
+        userService.registerNewUser(regDto);
+
+        assertEquals(userRole, user.getRole());
+        verify(userRepository).save(user);
     }
 
     @Test
-    void registerNewUser_shouldInsertUserAndCreateBucket() {
-        when(customJdbcTemplate.findOne(eq("SELECT user_id FROM users WHERE email = ?"), any(), eq(testUser.getEmail())))
-                .thenReturn(1L);
+    void shouldThrowEntityNotFoundWhenUserRoleNotFoundOnRegistration() {
+        UserRegistrationDto regDto = new UserRegistrationDto();
+        User user = new User();
 
-        userService.registerNewUser(testUser);
+        when(userRegistrationMapper.toEntity(regDto)).thenReturn(user);
+        when(roleRepository.findByName("USER")).thenReturn(Optional.empty());
 
-        verify(customJdbcTemplate, times(1)).execute(
-                eq("INSERT INTO users (email, password, lastname, firstname, age, gender, role_id) VALUES (?, ?, ?, ?, ?, ?, (SELECT role_id FROM roles WHERE name = 'USER'))"),
-                eq(testUser.getEmail()),
-                eq(testUser.getPassword()),
-                eq(testUser.getLastName()),
-                eq(testUser.getFirstName()),
-                eq(testUser.getAge()),
-                eq("MALE")
-        );
-
-        verify(customJdbcTemplate, times(1)).findOne(
-                eq("SELECT user_id FROM users WHERE email = ?"),
-                any(),
-                eq(testUser.getEmail())
-        );
-
-        verify(customJdbcTemplate, times(1)).execute(eq("INSERT INTO bucket (user_id) VALUES (?)"), eq(1L));
+        assertThrows(EntityNotFoundException.class, () -> userService.registerNewUser(regDto));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    void deleteUserAccount_shouldDeactivateUser_whenUserExists() throws SQLException {
-        ResultSet resultSet = mock(ResultSet.class);
-        when(customJdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenAnswer(invocation -> {
-            Function<ResultSet, User> mapper = invocation.getArgument(1);
-            return mapper.apply(resultSet);
-        });
+    void shouldDeleteUserAccountSuccessfully() {
+        User user = new User();
+        user.setId(1L);
+        user.setActive(true);
+
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "USER", true))
+                .thenReturn(Optional.of(user));
 
         userService.deleteUserAccount(1L);
 
-        verify(customJdbcTemplate, times(1)).execute(eq("UPDATE users SET is_active = false WHERE user_id = ?"), eq(1L));
+        assertFalse(user.isActive());
+        verify(userRepository).save(user);
     }
 
     @Test
-    void deleteUserAccount_shouldThrowException_whenUserNotFound() {
-        when(customJdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenReturn(null);
+    void shouldThrowEntityNotFoundWhenUserNotFoundOnDeletion() {
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(99L, "USER", true))
+                .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.deleteUserAccount(1L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("User with ID 1 not found!");
-
-        verify(customJdbcTemplate, never()).execute(any(String.class), any(Long.class));
+        assertThrows(EntityNotFoundException.class, () -> userService.deleteUserAccount(99L));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    void editPersonalInformation_shouldUpdateUser_whenUserExists() throws SQLException {
-        ResultSet resultSet = mock(ResultSet.class);
-        when(customJdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenAnswer(invocation -> {
-            Function<ResultSet, User> mapper = invocation.getArgument(1);
-            return mapper.apply(resultSet);
-        });
+    void shouldEditPersonalInformationSuccessfully() {
+        UserDto dto = new UserDto();
+        dto.setFirstname("Alex");
+        dto.setLastname("Stoianov");
+        dto.setAge(20);
+        dto.setEmail("alex@test.com");
+        dto.setPassword("pass1234");
 
-        User updatedInfo = new User();
-        updatedInfo.setEmail("new@gmail.com");
-        updatedInfo.setPassword("newpass");
-        updatedInfo.setLastName("Smith");
-        updatedInfo.setFirstName("Jane");
-        updatedInfo.setAge(30);
-        updatedInfo.setGender(Gender.FEMALE);
+        User existingUser = new User();
+        existingUser.setId(1L);
 
-        userService.editPersonalInformation(1L, updatedInfo);
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "USER", true))
+                .thenReturn(Optional.of(existingUser));
 
-        verify(customJdbcTemplate, times(1)).execute(
-                eq("UPDATE users SET email = ?, password = ?, lastname = ?, firstname = ?, age = ?, gender = ? WHERE user_id = ?"),
-                eq("new@gmail.com"), eq("newpass"), eq("Smith"), eq("Jane"), eq(30), eq("FEMALE"), eq(1L)
-        );
+        userService.editPersonalInformation(1L, dto);
+
+        assertEquals("Alex", existingUser.getFirstname());
+        assertEquals("Stoianov", existingUser.getLastname());
+        assertEquals(20, existingUser.getAge());
+        assertEquals("alex@test.com", existingUser.getEmail());
+        assertEquals("pass1234", existingUser.getPassword());
+        verify(userRepository).save(existingUser);
     }
 
     @Test
-    void getAllUsers_shouldReturnListOfUsers() throws SQLException {
-        ResultSet resultSet = mock(ResultSet.class);
-        when(customJdbcTemplate.findMany(any(String.class), any())).thenAnswer(invocation -> {
-            Function<ResultSet, User> mapper = invocation.getArgument(1);
-            return List.of(mapper.apply(resultSet));
-        });
+    void shouldThrowEntityNotFoundWhenUserNotFoundOnEditPersonalInformation() {
+        UserDto dto = new UserDto();
 
-        List<User> users = userService.getAllUsers();
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(99L, "USER", true))
+                .thenReturn(Optional.empty());
 
-        assertThat(users).hasSize(1);
+        assertThrows(EntityNotFoundException.class, () -> userService.editPersonalInformation(99L, dto));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    void getUserById_shouldReturnUser_whenFound() throws SQLException {
-        ResultSet resultSet = mock(ResultSet.class);
-        when(customJdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenAnswer(invocation -> {
-            Function<ResultSet, User> mapper = invocation.getArgument(1);
-            return mapper.apply(resultSet);
-        });
+    void shouldGetAllUsersSuccessfully() {
+        User user = new User();
+        UserDto dto = new UserDto();
 
-        User user = userService.getUserById(1L);
+        when(userRepository.findAllByRoleNameAndIsActive("USER", true)).thenReturn(List.of(user));
+        when(userMapper.toDto(user)).thenReturn(dto);
 
-        assertThat(user).isNotNull();
+        List<UserDto> result = userService.getAllUsers();
+
+        assertEquals(1, result.size());
+        verify(userRepository).findAllByRoleNameAndIsActive("USER", true);
     }
 
     @Test
-    void getUserById_shouldThrowException_whenNotFound() {
-        when(customJdbcTemplate.findOne(any(String.class), any(), eq(1L))).thenReturn(null);
+    void shouldReturnEmptyListWhenNoUsersFound() {
+        when(userRepository.findAllByRoleNameAndIsActive("USER", true)).thenReturn(Collections.emptyList());
 
-        assertThatThrownBy(() -> userService.getUserById(1L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("User with ID 1 not found!");
+        List<UserDto> result = userService.getAllUsers();
+
+        assertTrue(result.isEmpty());
+        verifyNoInteractions(userMapper);
     }
 
     @Test
-    void isEmailTaken_shouldReturnTrue_whenEmailExists() {
-        when(customJdbcTemplate.findOne(any(String.class), any(), eq("taken@gmail.com"))).thenReturn(true);
+    void shouldGetUserByIdSuccessfully() {
+        User user = new User();
+        user.setId(1L);
+        UserDto dto = new UserDto();
 
-        boolean taken = userService.isEmailTaken("taken@gmail.com");
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "USER", true))
+                .thenReturn(Optional.of(user));
+        when(userMapper.toDto(user)).thenReturn(dto);
 
-        assertThat(taken).isTrue();
+        UserDto result = userService.getUserById(1L);
+
+        assertNotNull(result);
+        verify(userRepository).findUserByIdAndRoleNameAndIsActive(1L, "USER", true);
     }
 
     @Test
-    void validateEmailIsFree_shouldThrowException_whenEmailTaken() {
-        when(customJdbcTemplate.findOne(any(String.class), any(), eq("taken@gmail.com"))).thenReturn(true);
+    void shouldThrowEntityNotFoundWhenUserNotFoundById() {
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(99L, "USER", true))
+                .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.validateEmailIsFree("taken@gmail.com"))
-                .isInstanceOf(EmailAlreadyExistsException.class)
-                .hasMessageContaining("Error 409: This email is already registered!");
+        assertThrows(EntityNotFoundException.class, () -> userService.getUserById(99L));
+    }
+
+    @Test
+    void shouldCheckIsEmailTaken() {
+        when(userRepository.existsByEmail("taken@test.com")).thenReturn(true);
+        when(userRepository.existsByEmail("free@test.com")).thenReturn(false);
+
+        assertTrue(userService.isEmailTaken("taken@test.com"));
+        assertFalse(userService.isEmailTaken("free@test.com"));
+    }
+
+    @Test
+    void shouldValidateEmailIsFreeSuccessfully() {
+        when(userRepository.existsByEmail("free@test.com")).thenReturn(false);
+
+        assertDoesNotThrow(() -> userService.validateEmailIsFree("free@test.com"));
+    }
+
+    @Test
+    void shouldThrowEmailAlreadyExistsWhenEmailIsTaken() {
+        when(userRepository.existsByEmail("taken@test.com")).thenReturn(true);
+
+        assertThrows(EmailAlreadyExistsException.class, () -> userService.validateEmailIsFree("taken@test.com"));
+    }
+
+    @Test
+    void shouldUpdateUserFieldSuccessfully() {
+        User user = new User();
+        user.setId(1L);
+        user.setFirstname("OldName");
+
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "USER", true))
+                .thenReturn(Optional.of(user));
+
+        userService.updateUserField(1L, u -> u.setFirstname("NewName"));
+
+        assertEquals("NewName", user.getFirstname());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundWhenUserNotFoundOnFieldUpdate() {
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(99L, "USER", true))
+                .thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> userService.updateUserField(99L, u -> u.setFirstname("Test")));
+        verify(userRepository, never()).save(any());
     }
 }

@@ -14,7 +14,7 @@ CREATE TABLE users
     age       INT,
     gender    VARCHAR(20),
     role_id   BIGINT              NOT NULL REFERENCES roles (role_id),
-    is_active BOOLEAN             DEFAULT true
+    is_active BOOLEAN DEFAULT true
 );
 
 CREATE TABLE categories
@@ -29,7 +29,7 @@ CREATE TABLE products
     name        VARCHAR(255)   NOT NULL,
     price       NUMERIC(19, 2) NOT NULL,
     category_id BIGINT         NOT NULL REFERENCES categories (category_id),
-    is_active   BOOLEAN        DEFAULT true
+    is_active   BOOLEAN DEFAULT true
 );
 
 CREATE TABLE orders

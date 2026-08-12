@@ -64,12 +64,3 @@ CREATE TABLE IF NOT EXISTS bucket_items
     CONSTRAINT uq_bucket_product
         UNIQUE (bucket_id, product_id)
 );
-
---some creation
-MERGE INTO roles (name) KEY(name) VALUES ('ADMIN');
-MERGE INTO roles (name) KEY(name) VALUES ('STAFF');
-MERGE INTO roles (name) KEY(name) VALUES ('USER');
-
-MERGE INTO categories (name) KEY(name) VALUES ('Electronics');
-MERGE INTO categories (name) KEY(name) VALUES ('Clothing');
-MERGE INTO categories (name) KEY(name) VALUES ('Books');

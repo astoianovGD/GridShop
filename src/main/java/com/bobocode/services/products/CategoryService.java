@@ -1,12 +1,17 @@
 package com.bobocode.services.products;
 
+import com.bobocode.dto.products.CategoryCreateDto;
+import com.bobocode.dto.products.CategoryDto;
 import com.bobocode.entities.products.Category;
-import com.bobocode.utility.CustomJdbcTemplate;
-import lombok.NonNull;
+import com.bobocode.exceptions.EntityNotFoundException;
+import com.bobocode.mappers.products.CategoryCreateMapper;
+import com.bobocode.mappers.products.CategoryMapper;
+import com.bobocode.repositories.products.CategoryRepository;
+import com.bobocode.repositories.products.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -14,70 +19,78 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class CategoryService {
 
-    /** The JDBC template for database operations. */
-    @NonNull
-    private final CustomJdbcTemplate customJdbcTemplate;
+    private final CategoryRepository categoryRepository;
+
+    private final CategoryCreateMapper categoryCreateMapper;
+
+    private final ProductRepository productRepository;
+
+    private final CategoryMapper categoryMapper;
 
     /**
      * Add new category.
      *
      * @param category the name of the category
      */
-    public void addNewCategory(final String category) {
-        if (isCategoryNameExists(category)) {
+    @Transactional
+    public void addNewCategory(final CategoryCreateDto category) {
+        if (isCategoryNameExists(category.getName())) {
             throw new IllegalArgumentException(
-                    "Category with name '" + category + "' already exists!"
+                    "Category with name '" + category.getName() + "' already exists!"
             );
         }
-
-        String sql = "INSERT INTO categories (name) VALUES (?)";
-        customJdbcTemplate.execute(sql, category);
+        categoryRepository.save(categoryCreateMapper.toEntity(category));
     }
 
     /**
      * Changing existing category.
      *
-     * @param category the new name of the category
+     * @param categoryDto the new name of the category
      * @param id       the ID of the category to update
      */
-    public void editCategory(final String category, final long id) {
-        if (isCategoryNameExists(category)) {
+    public void editCategory(final CategoryDto categoryDto, final long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category with id " + id + " not found!"));
+
+        String newName = categoryDto.getName();
+        if (!category.getName().equals(newName) && isCategoryNameExists(newName)) {
             throw new IllegalArgumentException(
-                    "Category with name '" + category + "' already exists!"
+                    "Category with name '" + newName + "' already exists!"
             );
         }
 
-        String sql = "UPDATE categories SET name = ? WHERE category_id = ?";
-        customJdbcTemplate.execute(sql, category, id);
+        category.setName(newName);
+
+        categoryRepository.save(category);
     }
 
     /**
-     * Removes category safely.
+     * Removes a category by its ID if it doesn't contain any products.
      *
      * @param categoryId the ID of the category to remove
+     * @throws EntityNotFoundException if the category is not found
+     * @throws IllegalStateException   if the category contains products
      */
+    @Transactional
     public void removeCategory(final long categoryId) {
-        String checkSql =
-                "SELECT EXISTS (SELECT 1 FROM products WHERE category_id = ?)";
-        Boolean hasProducts = customJdbcTemplate.findOne(checkSql, rs -> {
-            try {
-                return rs.getBoolean(1);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }, categoryId);
+        // check if category exist
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new EntityNotFoundException("Category with id " + categoryId + " not found!");
+        }
 
-        if (hasProducts != null && hasProducts) {
+        // check if there is any products
+        if (productRepository.existsByCategoryId(categoryId)) {
             throw new IllegalStateException(
                     "Cannot delete category: it still contains products. "
                             + "Reassign or delete them first."
             );
         }
 
-        String sql = "DELETE FROM categories WHERE category_id = ?";
-        customJdbcTemplate.execute(sql, categoryId);
+        // delete category
+        categoryRepository.deleteById(categoryId);
     }
 
     /**
@@ -87,18 +100,7 @@ public class CategoryService {
      * @return true if the category name exists, false otherwise
      */
     private boolean isCategoryNameExists(final String name) {
-        String sql = "SELECT EXISTS "
-                + "(SELECT 1 FROM categories WHERE LOWER(name) = LOWER(?))";
-        Boolean exists = customJdbcTemplate.findOne(sql, rs -> {
-            try {
-                return rs.getBoolean(1);
-            } catch (SQLException e) {
-                throw new RuntimeException(
-                        "Error checking category name existence", e
-                );
-            }
-        }, name);
-        return exists != null && exists;
+        return categoryRepository.existsByName(name);
     }
 
     /**
@@ -106,21 +108,12 @@ public class CategoryService {
      *
      * @return a list containing all categories
      */
-    public List<Category> getAllCategories() {
-        String sql = "SELECT category_id, name FROM categories";
-
-        return customJdbcTemplate.findMany(sql, rs -> {
-            try {
-                Category category = new Category();
-                category.setId(rs.getLong("category_id"));
-                category.setName(rs.getString("name"));
-                return category;
-            } catch (SQLException e) {
-                throw new RuntimeException(
-                        "Error mapping Category from ResultSet", e
-                );
-            }
-        });
+    public List<CategoryDto> getAllCategories() {
+        return categoryRepository
+                .findAll()
+                .stream()
+                .map(categoryMapper::toDto)
+                .toList();
     }
 
     /**
@@ -130,17 +123,11 @@ public class CategoryService {
      * @return true if exists, false otherwise
      */
     public boolean isCategoryExists(final long categoryId) {
-        String sql = "SELECT EXISTS "
-                + "(SELECT 1 FROM categories WHERE category_id = ?)";
-        Boolean exists = customJdbcTemplate.findOne(sql, rs -> {
-            try {
-                return rs.getBoolean(1);
-            } catch (SQLException e) {
-                throw new RuntimeException(
-                        "Error checking category existence", e
-                );
-            }
-        }, categoryId);
-        return exists != null && exists;
+        return categoryRepository.existsById(categoryId);
+    }
+
+    public Category getCategoryEntityById(final long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category with ID " + id + " not found!"));
     }
 }

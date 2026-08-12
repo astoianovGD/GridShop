@@ -1,6 +1,7 @@
 package com.bobocode.services.user;
 
-import com.bobocode.entities.products.Bucket;
+import com.bobocode.dto.users.UserDto;
+import com.bobocode.entities.bucket.Bucket;
 import com.bobocode.entities.products.Product;
 import com.bobocode.entities.users.User;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,8 @@ public final class UserConsoleViewService {
      *
      * @param user the user whose profile is to be printed
      */
-    public void printUserProfile(final User user) {
-        String fullName = user.getFirstName() + " " + user.getLastName();
+    public void printUserProfile(final UserDto user) {
+        String fullName = user.getFirstname() + " " + user.getLastname();
 
         System.out.println("\n+--------------------------------------+");
         System.out.println("|             USER PROFILE             |");
@@ -34,37 +35,5 @@ public final class UserConsoleViewService {
         System.out.println("+--------------------------------------+\n");
     }
 
-    /**
-     * Prints the purchase history of the specified user.
-     *
-     * @param user the user whose purchase history is to be printed
-     */
-    public void printUserPurchaseHistory(final User user) {
-        List<Bucket> history = user.getPurchaseHistory();
-
-        if (history == null || history.isEmpty()) {
-            System.out.println("History is empty. No purchases yet.");
-            return;
-        }
-
-        int receiptNumber = 1;
-        for (Bucket bucket : history) {
-            System.out.println("\nReceipt #" + receiptNumber + ":");
-            System.out.println("---------------------------------");
-
-            BigDecimal totalAmount = BigDecimal.ZERO;
-
-            for (Product product : bucket.getProductsInBucket()) {
-                System.out.printf("- %-15s | $%5.2f%n",
-                        product.getName(), product.getPrice());
-                totalAmount = totalAmount.add(product.getPrice());
-            }
-
-            System.out.println("---------------------------------");
-            System.out.printf("Total:            | $%5.2f%n", totalAmount);
-
-            receiptNumber++;
-        }
-    }
 
 }

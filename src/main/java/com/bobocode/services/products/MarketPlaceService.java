@@ -1,76 +1,115 @@
 package com.bobocode.services.products;
 
+import com.bobocode.dto.products.ProductDto;
+import com.bobocode.dto.users.UserDto;
+import com.bobocode.entities.products.Category;
 import com.bobocode.entities.products.Product;
+import com.bobocode.entities.users.User;
 import com.bobocode.exceptions.EntityNotFoundException;
-import com.bobocode.utility.CustomJdbcTemplate;
-import lombok.NonNull;
+import com.bobocode.mappers.products.ProductCreateMapper;
+import com.bobocode.mappers.products.ProductMapper;
+import com.bobocode.mappers.users.UserMapper;
+import com.bobocode.repositories.bucket.BucketItemRepository;
+import com.bobocode.repositories.products.CategoryRepository;
+import com.bobocode.repositories.products.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Service for managing products within the marketplace.
  */
 @RequiredArgsConstructor
 @Service
-public final class MarketPlaceService {
+@Transactional(readOnly = true)
+public class MarketPlaceService {
 
-    /** The JDBC template for database operations. */
-    @NonNull
-    private final CustomJdbcTemplate customJdbcTemplate;
+    private final ProductRepository productRepository;
+
+    private final ProductMapper productMapper;
+
+    private final ProductCreateMapper productCreateMapper;
+
+    private final CategoryRepository categoryRepository;
+
+    private final BucketItemRepository bucketItemRepository;
+
+    private final UserMapper userMapper;
 
     /**
      * Adds a new product to the marketplace.
      *
-     * @param product the product to be added
+     * @param createDto the product to be added
      */
-    public void addNewProduct(final Product product) {
-        String sql = "INSERT INTO products (name, price, category_id) "
-                + "VALUES (?, ?, ?)";
-        customJdbcTemplate.execute(sql,
-                product.getName(),
-                product.getPrice(),
-                product.getCategoryId()
-        );
+    @Transactional
+    public void addNewProduct(final com.bobocode.dto.products.ProductCreateDto createDto) {
+        Product product = productCreateMapper.toEntity(createDto);
+
+        Category category = categoryRepository.findById(createDto.getCategoryId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Category with ID " + createDto.getCategoryId() + " not found!"
+                ));
+
+        product.setCategory(category);
+
+        productRepository.save(product);
     }
 
     /**
      * Removes a product from the marketplace by its ID.
      *
-     * @param id the ID of the product to remove
+     * @param productId the ID of the product to remove
      * @throws EntityNotFoundException if the product is not found
      */
-    public void removeProduct(final long id) {
-        getProductById(id);
+    @Transactional
+    public List<UserDto> removeProduct(final long productId) {
+        Product product = productRepository
+                .findProductByIsActiveAndId(true, productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product with id " + productId + " not found!"));
 
-        String sql = "UPDATE products SET is_active = false "
-                + "WHERE product_id = ?";
-        customJdbcTemplate.execute(sql, id);
+        // find all people with this product in a bucket
+        List<User> usersWithProduct = bucketItemRepository.findActiveUsersByActiveProductIdInBucket(productId);
 
-        String removeFromBucketsSql = "DELETE FROM bucket_items "
-                + "WHERE product_id = ?";
-        customJdbcTemplate.execute(removeFromBucketsSql, id);
+        // delete from bucket
+        bucketItemRepository.deleteAllByProductId(productId);
+
+        // deactivate product
+        product.setActive(false);
+        productRepository.save(product);
+
+        // return list of users
+        return usersWithProduct.stream()
+                .map(userMapper::toDto)
+                .toList();
     }
 
     /**
      * Edits an existing product in the marketplace.
      *
-     * @param product the product with updated information
+     * @param productDto the product with updated information
      */
-    public void editProduct(final Product product) {
-        getProductById(product.getId());
+    @Transactional
+    public void editProduct(final ProductDto productDto) {
+        Product existingProduct = productRepository
+                .findProductByIsActiveAndId(true, productDto.getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Product with id " + productDto.getId() + " not found!"
+                ));
 
-        String sql = "UPDATE products SET name = ?, price = ?, "
-                + "category_id = ? WHERE product_id = ?";
-        customJdbcTemplate.execute(sql,
-                product.getName(),
-                product.getPrice(),
-                product.getCategoryId(),
-                product.getId()
-        );
+        existingProduct.setName(productDto.getName());
+        existingProduct.setPrice(productDto.getPrice());
+
+        Category category = categoryRepository.findByName(productDto.getCategoryName())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Category with name '" + productDto.getCategoryName() + "' not found!"
+                ));
+
+        existingProduct.setCategory(category);
+
+        productRepository.save(existingProduct);
     }
 
     /**
@@ -78,55 +117,48 @@ public final class MarketPlaceService {
      *
      * @return a list containing all products
      */
-    public List<Product> getAllProducts() {
-        String sql = "SELECT product_id, name, price, category_id "
-                + "FROM products WHERE is_active = true";
-
-        return customJdbcTemplate.findMany(sql, this::mapProductRow);
+    public List<ProductDto> getAllProducts() {
+        return productRepository.findAllByIsActive(true)
+                .stream()
+                .map(productMapper::toDto)
+                .toList();
     }
 
     /**
      * Retrieves a product from the marketplace by its ID.
      *
-     * @param id the ID of the product to retrieve
+     * @param productId the ID of the product to retrieve
      * @return the requested product
      * @throws EntityNotFoundException if the product is not found
      */
-    public Product getProductById(final long id) {
-        String sql = "SELECT product_id, name, price, category_id "
-                + "FROM products WHERE product_id = ? AND is_active = true";
+    public ProductDto getProductById(final long productId) {
+        Product product = productRepository
+                .findProductByIsActiveAndId(true, productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product with id "  + productId + " not found!"));
 
-        Product product = customJdbcTemplate.findOne(
-                sql, this::mapProductRow, id
-        );
-
-        if (product == null) {
-            throw new EntityNotFoundException(
-                    "Product with ID " + id + " not found!"
-            );
-        }
-
-        return product;
+        return productMapper.toDto(product);
     }
+
 
     /**
-     * Maps a ResultSet row to a Product object.
+     * Universal method to update specific fields of a product within a transaction.
      *
-     * @param rs the result set row
-     * @return the mapped product object
+     * @param productId    the ID of the product to update
+     * @param fieldUpdater a lambda representing the field update
      */
-    private Product mapProductRow(final ResultSet rs) {
-        try {
-            Product p = new Product();
-            p.setId(rs.getLong("product_id"));
-            p.setName(rs.getString("name"));
-            p.setPrice(rs.getBigDecimal("price"));
-            p.setCategoryId(rs.getLong("category_id"));
-            return p;
-        } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Error mapping Product from ResultSet", e
-            );
-        }
+    @Transactional
+    public void updateProductField(final long productId, final Consumer<Product> fieldUpdater) {
+        Product existingProduct = productRepository
+                .findProductByIsActiveAndId(true, productId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Product with id " + productId + " not found!"
+                ));
+
+        fieldUpdater.accept(existingProduct);
+
+        productRepository.save(existingProduct);
+
     }
+
+
 }

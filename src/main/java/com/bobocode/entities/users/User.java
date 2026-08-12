@@ -1,57 +1,37 @@
 package com.bobocode.entities.users;
 
-import com.bobocode.entities.products.Bucket;
 import com.bobocode.enums.Gender;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Represents a customer in the system.
- */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public final class User extends AbstractUser {
+@Entity
+@Table(name = "users")
+public final class User {
 
-    /**
-     * The age of the user.
-     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private long id;
+
+    private String email;
+
+    private String password;
+
+    private String firstname;
+
+    private String lastname;
+
     private int age;
 
-    /**
-     * The gender of the user.
-     */
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    /**
-     * The user's current shopping bucket.
-     */
-    private Bucket bucket = new Bucket();
+    @Column(name = "is_active")
+    private boolean isActive;
 
-    /**
-     * The history of buckets purchased by the user.
-     */
-    private List<Bucket> purchaseHistory = new ArrayList<>();
-
-    /**
-     * Returns a formatted string representation of the user.
-     *
-     * @return a string containing user details
-     */
-    @Override
-    public String toString() {
-
-        return String.format(
-                "[User] ID: %d | Name: %s %s | Email: %s "
-                        + "| Age: %d | Gender: %s",
-                getId(),
-                getFirstName(),
-                getLastName(),
-                getEmail(),
-                age,
-                gender
-        );
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 }
