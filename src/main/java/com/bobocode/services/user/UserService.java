@@ -66,6 +66,11 @@ public class UserService {
                 ));
 
         user.setActive(false);
+
+        // make email anonim (example: deleted_1691234567890_alex@gmail.com)
+        String anonymizedEmail = "deleted_" + System.currentTimeMillis() + "_" + user.getEmail();
+        user.setEmail(anonymizedEmail);
+
         userRepository.save(user);
     }
 
