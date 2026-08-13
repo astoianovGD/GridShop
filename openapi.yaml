@@ -1,0 +1,395 @@
+openapi: 3.1.0
+info:
+  title: Marketplace and User Management API
+  version: 1.0.0
+  description: OpenAPI specification for the console-based Marketplace and User Management system.
+
+servers:
+  - url: https://api.marketplace.com/v1
+    description: Production server
+
+paths:
+  # ==================== PRODUCTS ====================
+  /products:
+    get:
+      summary: Get all products with sorting, filtering, and pagination
+      parameters:
+        - name: sort
+          in: query
+          required: false
+          description: Sorting option (e.g., priceAsc, priceDesc, nameAsc, nameDesc)
+          schema:
+            type: string
+        - name: filterBy
+          in: query
+          required: false
+          description: Filtering criteria type (e.g., startsWith, priceHigher, priceLower, contains)
+          schema:
+            type: string
+        - name: filterValue
+          in: query
+          required: false
+          description: Value for the filter
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of items per page (pagination)
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          description: Offset for pagination
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Successful response with product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDto'
+    post:
+      summary: Add a new product (Staff only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDto'
+      responses:
+        '201':
+          description: Product successfully created
+
+  /products/{id}:
+    get:
+      summary: Get product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '404':
+          description: Product not found
+    put:
+      summary: Update product information
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductDto'
+      responses:
+        '200':
+          description: Product updated successfully
+    delete:
+      summary: Remove product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product deleted successfully
+
+  # ==================== CATEGORIES ====================
+  /categories:
+    get:
+      summary: Get all product categories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryDto'
+    post:
+      summary: Add a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateDto'
+      responses:
+        '201':
+          description: Category created successfully
+
+  /categories/{id}:
+    put:
+      summary: Update category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryDto'
+      responses:
+        '200':
+          description: Category updated successfully
+    delete:
+      summary: Remove category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category deleted successfully
+
+  # ==================== USERS & AUTH ====================
+  /users:
+    get:
+      summary: Get all users (Staff view)
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+
+  /users/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationDto'
+      responses:
+        '201':
+          description: Registration successful
+
+  /users/{id}:
+    get:
+      summary: Get user profile by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+    delete:
+      summary: Delete user account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Account deleted successfully
+
+  # ==================== BUCKET / CART ====================
+  /users/{userId}/bucket:
+    get:
+      summary: Get products from user's shopping bucket
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bucket items retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BucketItemDto'
+    post:
+      summary: Add product to user's bucket
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: integer
+                amount:
+                  type: integer
+      responses:
+        '200':
+          description: Product added to bucket
+
+  /users/{userId}/bucket/{productId}:
+    delete:
+      summary: Remove a specific product from user's bucket
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product removed from bucket
+
+  # ==================== ORDERS ====================
+  /users/{userId}/orders:
+    get:
+      summary: Get user's purchase history / orders
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order history retrieved
+    post:
+      summary: Checkout / create order from current bucket items
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Order successfully created and saved to history
+
+components:
+  schemas:
+    ProductDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+          format: decimal
+        categoryId:
+          type: integer
+
+    ProductCreateDto:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+          format: decimal
+        categoryId:
+          type: integer
+
+    CategoryDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    CategoryCreateDto:
+      type: object
+      properties:
+        name:
+          type: string
+
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+
+    UserRegistrationDto:
+      type: object
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        age:
+          type: integer
+        gender:
+          type: string
+
+    BucketItemDto:
+      type: object
+      properties:
+        productId:
+          type: integer
+        productName:
+          type: string
+        price:
+          type: number
+          format: decimal
+        amount:
+          type: integer
