@@ -1,14 +1,8 @@
 package com.bobocode.services.user;
 
 import com.bobocode.dto.users.UserDto;
-import com.bobocode.entities.bucket.Bucket;
-import com.bobocode.entities.products.Product;
-import com.bobocode.entities.users.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Service for displaying user information in the console.

@@ -64,3 +64,4 @@ CREATE TABLE IF NOT EXISTS bucket_items
     CONSTRAINT uq_bucket_product
         UNIQUE (bucket_id, product_id)
 );
+

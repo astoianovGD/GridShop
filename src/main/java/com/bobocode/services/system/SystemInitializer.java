@@ -12,11 +12,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.Scanner;
 
+/**
+ * Service for initializing system default configurations like admin creation.
+ */
 @Service
 @RequiredArgsConstructor
 public class SystemInitializer {
 
+    /**
+     * Repository for managing user entities.
+     */
     private final UserRepository userRepository;
+
+    /**
+     * Repository for managing role entities.
+     */
     private final RoleRepository roleRepository;
 
     /**
@@ -49,7 +59,6 @@ public class SystemInitializer {
                     InputValidator.getValidPassword(scanner)
             );
 
-            //admin do not need gender and age
             firstAdmin.setActive(true);
 
             Role adminRole = roleRepository.findByName("ADMIN")

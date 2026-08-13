@@ -3,15 +3,19 @@ package com.bobocode.services.user;
 import com.bobocode.dto.users.StaffDto;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service for rendering staff details to the console.
+ */
 @Service
 public class StaffViewService {
 
     /**
-     * Prints the staff member's details nicely to the console, omitting sensitive data like passwords.
+     * Prints the staff member's details nicely to the console,
+     * omitting sensitive data like passwords.
      *
-     * @code StaffDto the staff DTO to display
+     * @param staff the staff DTO to display
      */
-    public void printStaffDetails(StaffDto staff) {
+    public void printStaffDetails(final StaffDto staff) {
         if (staff == null) {
             System.out.println("No staff data available.");
             return;

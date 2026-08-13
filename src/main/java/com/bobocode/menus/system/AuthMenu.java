@@ -71,7 +71,6 @@ public final class AuthMenu {
                     return null;
                 }
                 default -> System.out.println("Wrong Action!");
-                // 400
             }
         }
     }
@@ -82,7 +81,8 @@ public final class AuthMenu {
      * @param scanner the scanner for reading user input
      * @return a new User populated with input data
      */
-    private UserRegistrationDto createNewUserFromConsole(final Scanner scanner) {
+    private UserRegistrationDto createNewUserFromConsole(
+            final Scanner scanner) {
         System.out.println("--- User Registration ---");
 
         String firstName = InputValidator.getValidName(scanner, "First Name");

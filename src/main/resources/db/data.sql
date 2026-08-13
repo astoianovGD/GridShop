@@ -37,3 +37,4 @@ MERGE INTO products (name, price, category_id, is_active)
 MERGE INTO products (name, price, category_id, is_active)
     KEY(name)
     VALUES ('Grid "Artificial Intelligence" Book', 5.00, (SELECT category_id FROM categories WHERE name = 'Books'), true);
+

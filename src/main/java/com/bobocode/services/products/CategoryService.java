@@ -22,12 +22,24 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CategoryService {
 
+    /**
+     * Repository for managing category entities.
+     */
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Mapper for category creation DTOs.
+     */
     private final CategoryCreateMapper categoryCreateMapper;
 
+    /**
+     * Repository for managing product entities.
+     */
     private final ProductRepository productRepository;
 
+    /**
+     * Mapper for category DTOs.
+     */
     private final CategoryMapper categoryMapper;
 
     /**
@@ -39,7 +51,8 @@ public class CategoryService {
     public void addNewCategory(final CategoryCreateDto category) {
         if (isCategoryNameExists(category.getName())) {
             throw new IllegalArgumentException(
-                    "Category with name '" + category.getName() + "' already exists!"
+                    "Category with name '" + category.getName()
+                            + "' already exists!"
             );
         }
         categoryRepository.save(categoryCreateMapper.toEntity(category));
@@ -49,14 +62,17 @@ public class CategoryService {
      * Changing existing category.
      *
      * @param categoryDto the new name of the category
-     * @param id       the ID of the category to update
+     * @param id          the ID of the category to update
      */
     public void editCategory(final CategoryDto categoryDto, final long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category with id " + id + " not found!"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Category with id " + id + " not found!"
+                ));
 
         String newName = categoryDto.getName();
-        if (!category.getName().equals(newName) && isCategoryNameExists(newName)) {
+        if (!category.getName().equals(newName)
+                && isCategoryNameExists(newName)) {
             throw new IllegalArgumentException(
                     "Category with name '" + newName + "' already exists!"
             );
@@ -76,12 +92,12 @@ public class CategoryService {
      */
     @Transactional
     public void removeCategory(final long categoryId) {
-        // check if category exist
         if (!categoryRepository.existsById(categoryId)) {
-            throw new EntityNotFoundException("Category with id " + categoryId + " not found!");
+            throw new EntityNotFoundException(
+                    "Category with id " + categoryId + " not found!"
+            );
         }
 
-        // check if there is any products
         if (productRepository.existsByCategoryId(categoryId)) {
             throw new IllegalStateException(
                     "Cannot delete category: it still contains products. "
@@ -89,7 +105,6 @@ public class CategoryService {
             );
         }
 
-        // delete category
         categoryRepository.deleteById(categoryId);
     }
 
@@ -126,8 +141,16 @@ public class CategoryService {
         return categoryRepository.existsById(categoryId);
     }
 
+    /**
+     * Retrieves the category entity by its ID.
+     *
+     * @param id the category ID
+     * @return the category entity
+     */
     public Category getCategoryEntityById(final long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Category with ID " + id + " not found!"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Category with ID " + id + " not found!"
+                ));
     }
 }

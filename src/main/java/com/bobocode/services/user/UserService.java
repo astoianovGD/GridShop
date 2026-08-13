@@ -6,8 +6,8 @@ import com.bobocode.entities.users.Role;
 import com.bobocode.entities.users.User;
 import com.bobocode.exceptions.EmailAlreadyExistsException;
 import com.bobocode.exceptions.EntityNotFoundException;
-import com.bobocode.mappers.users.UserRegistrationMapper;
 import com.bobocode.mappers.users.UserMapper;
+import com.bobocode.mappers.users.UserRegistrationMapper;
 import com.bobocode.repositories.users.RoleRepository;
 import com.bobocode.repositories.users.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,26 @@ import java.util.function.Consumer;
 @Transactional(readOnly = true)
 public class UserService {
 
+    /**
+     * Repository for managing users.
+     */
     private final UserRepository userRepository;
 
+    /**
+     * Mapper for user DTOs.
+     */
     private final UserMapper userMapper;
 
+    /**
+     * Mapper for user registration DTOs.
+     */
     private final UserRegistrationMapper userRegistrationMapper;
 
+    /**
+     * Repository for managing roles.
+     */
     private final RoleRepository roleRepository;
+
     /**
      * Registers a new user in the system.
      *
@@ -42,7 +55,9 @@ public class UserService {
         User user = userRegistrationMapper.toEntity(newUser);
 
         Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new EntityNotFoundException("Default role 'USER' not found!"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Default role 'USER' not found!"
+                ));
 
         user.setRole(userRole);
 
@@ -67,8 +82,8 @@ public class UserService {
 
         user.setActive(false);
 
-        // make email anonim (example: deleted_1691234567890_alex@gmail.com)
-        String anonymizedEmail = "deleted_" + System.currentTimeMillis() + "_" + user.getEmail();
+        String anonymizedEmail = "deleted_"
+                + System.currentTimeMillis() + "_" + user.getEmail();
         user.setEmail(anonymizedEmail);
 
         userRepository.save(user);
@@ -77,12 +92,13 @@ public class UserService {
     /**
      * Updates the personal information of an existing user.
      *
-     * @param userId          the ID of the user to update
+     * @param userId  the ID of the user to update
      * @param userDto the user object containing updated information
      */
     @Transactional
     public void editPersonalInformation(
-            final long userId, final UserDto userDto) {
+            final long userId, final UserDto userDto
+    ) {
         User existingUser = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
                         userId,
@@ -128,8 +144,8 @@ public class UserService {
                         "USER",
                         true
                 ).orElseThrow(() -> new EntityNotFoundException(
-                "User with ID " + userId + " not found!"
-        ));
+                        "User with ID " + userId + " not found!"
+                ));
         return userMapper.toDto(user);
     }
 
@@ -159,23 +175,26 @@ public class UserService {
     }
 
     /**
-     * Universal method to update specific fields of a user within a transaction.
+     * Universal method to
+     * update specific fields of a user within a transaction.
      *
      * @param userId       the ID of the user to update
-     * @param fieldUpdater a lambda or method reference representing the field update
+     * @param fieldUpdater a lambda representing the field update
      */
     @Transactional
-    public void updateUserField(final long userId, final Consumer<User> fieldUpdater) {
+    public void updateUserField(
+            final long userId, final Consumer<User> fieldUpdater
+    ) {
         User existingUser = userRepository
-                .findUserByIdAndRoleNameAndIsActive(userId, "USER", true)
+                .findUserByIdAndRoleNameAndIsActive(
+                        userId, "USER", true
+                )
                 .orElseThrow(() -> new EntityNotFoundException(
                         "User with ID " + userId + " not found!"
                 ));
 
-        // do lyambda function which we get
         fieldUpdater.accept(existingUser);
 
         userRepository.save(existingUser);
     }
-
 }

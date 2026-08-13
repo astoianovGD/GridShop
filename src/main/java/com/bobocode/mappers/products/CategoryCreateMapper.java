@@ -7,10 +7,19 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
+/**
+ * Mapper for converting category creation DTOs to category entities.
+ */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CategoryCreateMapper {
 
+    /**
+     * Converts a category creation DTO to a category entity.
+     *
+     * @param createDto the category creation DTO
+     * @return the corresponding category entity
+     */
     @Mapping(target = "id", ignore = true)
     Category toEntity(CategoryCreateDto createDto);
 }

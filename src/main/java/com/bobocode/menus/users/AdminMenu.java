@@ -32,6 +32,9 @@ public final class AdminMenu {
     @NonNull
     private final UserService userService;
 
+    /**
+     * Service for viewing staff details.
+     */
     @NonNull
     private final StaffViewService staffViewService;
 
@@ -71,7 +74,6 @@ public final class AdminMenu {
 
         System.out.println("--- ALL STAFF --- ");
         staffList.forEach(staffViewService::printStaffDetails);
-        //print change
 
         while (true) {
             System.out.println("\nWanna do smth else?");
@@ -101,7 +103,6 @@ public final class AdminMenu {
                 scanner, "Enter ID of Staff to edit:"
         );
         try {
-            // Перевіряємо чи існує такий staff перед викликом меню редагування
             staffService.getStaffById(id);
             editStaffInfo(scanner, id);
         } catch (EntityNotFoundException e) {
@@ -167,23 +168,39 @@ public final class AdminMenu {
 
         switch (option) {
             case "1" -> {
-                String newFirstName = InputValidator.getValidName(scanner, "First Name");
-                staffService.updateStaffField(staffId, u -> u.setFirstname(newFirstName));
+                String newFirstName = InputValidator.getValidName(
+                        scanner, "First Name"
+                );
+                staffService.updateStaffField(
+                        staffId, u -> u.setFirstname(newFirstName)
+                );
                 System.out.println("First Name successfully updated!");
             }
             case "2" -> {
-                String newLastName = InputValidator.getValidName(scanner, "Last Name");
-                staffService.updateStaffField(staffId, u -> u.setLastname(newLastName));
+                String newLastName = InputValidator.getValidName(
+                        scanner, "Last Name"
+                );
+                staffService.updateStaffField(
+                        staffId, u -> u.setLastname(newLastName)
+                );
                 System.out.println("Last Name successfully updated!");
             }
             case "3" -> {
-                String newEmail = EmailValidator.getUniqueEmailFromConsole(scanner, userService);
-                staffService.updateStaffField(staffId, u -> u.setEmail(newEmail));
+                String newEmail = EmailValidator.getUniqueEmailFromConsole(
+                        scanner, userService
+                );
+                staffService.updateStaffField(
+                        staffId, u -> u.setEmail(newEmail)
+                );
                 System.out.println("Email successfully updated!");
             }
             case "4" -> {
-                String newPassword = InputValidator.getValidPassword(scanner);
-                staffService.updateStaffField(staffId, u -> u.setPassword(newPassword));
+                String newPassword = InputValidator.getValidPassword(
+                        scanner
+                );
+                staffService.updateStaffField(
+                        staffId, u -> u.setPassword(newPassword)
+                );
                 System.out.println("Password successfully updated!");
             }
             case "0" -> {

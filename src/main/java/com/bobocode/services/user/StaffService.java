@@ -9,7 +9,6 @@ import com.bobocode.mappers.users.StaffMapper;
 import com.bobocode.mappers.users.StaffRegistrationMapper;
 import com.bobocode.repositories.users.RoleRepository;
 import com.bobocode.repositories.users.UserRepository;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +24,24 @@ import java.util.function.Consumer;
 @Transactional(readOnly = true)
 public class StaffService {
 
+    /**
+     * Repository for managing users.
+     */
     private final UserRepository userRepository;
 
+    /**
+     * Mapper for staff DTOs.
+     */
     private final StaffMapper staffMapper;
 
+    /**
+     * Mapper for staff registration.
+     */
     private final StaffRegistrationMapper staffRegistrationMapper;
 
+    /**
+     * Repository for managing roles.
+     */
     private final RoleRepository roleRepository;
 
     /**
@@ -42,7 +53,10 @@ public class StaffService {
     public void addNewStaff(final StaffRegistrationDto newStaff) {
         User user = staffRegistrationMapper.toEntity(newStaff);
 
-        Role role = roleRepository.findByName("STAFF").orElseThrow(() -> new EntityNotFoundException("Default role 'STAFF' not found!"));
+        Role role = roleRepository.findByName("STAFF")
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Default role 'STAFF' not found!"
+                ));
 
         user.setRole(role);
 
@@ -52,7 +66,7 @@ public class StaffService {
     /**
      * Edits an existing staff member.
      *
-     * @param staffId          the ID of the staff member to edit
+     * @param staffId  the ID of the staff member to edit
      * @param staffDto the updated staff member details
      */
     @Transactional
@@ -115,15 +129,26 @@ public class StaffService {
      * @throws EntityNotFoundException if the staff member is not found
      */
     public StaffDto getStaffById(final long staffId) {
-       User user = userRepository.findUserByIdAndRoleNameAndIsActive(staffId, "STAFF", true)
-               .orElseThrow(() -> new EntityNotFoundException(
-                       "STAFF with ID " + staffId + " not found!"
-               ));
-       return staffMapper.toDto(user);
+        User user = userRepository
+                .findUserByIdAndRoleNameAndIsActive(
+                        staffId, "STAFF", true
+                )
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "STAFF with ID " + staffId + " not found!"
+                ));
+        return staffMapper.toDto(user);
     }
 
+    /**
+     * Updates a specific field of a staff member.
+     *
+     * @param staffId      the ID of the staff member
+     * @param fieldUpdater the field updater consumer
+     */
     @Transactional
-    public void updateStaffField(final long staffId, final Consumer<User> fieldUpdater) {
+    public void updateStaffField(
+            final long staffId, final Consumer<User> fieldUpdater
+    ) {
         User existingStaff = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
                         staffId,
@@ -136,6 +161,4 @@ public class StaffService {
         fieldUpdater.accept(existingStaff);
         userRepository.save(existingStaff);
     }
-
-
 }

@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
 
+    /**
+     * Repository for managing user entities.
+     */
     private final UserRepository userRepository;
 
     /**
@@ -39,8 +42,8 @@ public class AuthService {
             );
         }
 
-
-        System.out.println("Successfully logged in as: " + user.getRole().getName());
+        System.out.println("Successfully logged in as: "
+                + user.getRole().getName());
         return user;
     }
 }

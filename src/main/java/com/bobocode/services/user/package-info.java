@@ -1,8 +1,4 @@
 /**
- * Contains services related to user management.
- * <p>
- * This package provides classes for handling authentication, user profiles,
- * staff management, and viewing user-related information in the console.
- * </p>
+ * Provides services for user and staff management and console rendering.
  */
 package com.bobocode.services.user;

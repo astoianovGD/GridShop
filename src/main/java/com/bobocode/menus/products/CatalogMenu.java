@@ -20,12 +20,21 @@ import java.util.Scanner;
 @Service
 public final class CatalogMenu {
 
+    /**
+     * Service for displaying products in the console.
+     */
     @NonNull
     private final ProductsConsoleViewService productsConsoleViewService;
 
+    /**
+     * Service for sorting products.
+     */
     @NonNull
     private final SortProductService sortProductService;
 
+    /**
+     * Service for filtering products.
+     */
     @NonNull
     private final FilterProductService filterProductService;
 
@@ -127,7 +136,8 @@ public final class CatalogMenu {
     private void handleSearching(final Scanner scanner) {
         System.out.println("Enter search keyword:");
         String keyword = scanner.nextLine();
-        List<ProductDto> searched = filterProductService.filterByNameContains(keyword);
+        List<ProductDto> searched = filterProductService
+                .filterByNameContains(keyword);
 
         if (searched.isEmpty()) {
             System.out.println("No products match your keyword.");

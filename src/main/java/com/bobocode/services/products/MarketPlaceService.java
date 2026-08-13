@@ -27,16 +27,34 @@ import java.util.function.Consumer;
 @Transactional(readOnly = true)
 public class MarketPlaceService {
 
+    /**
+     * Repository for managing products.
+     */
     private final ProductRepository productRepository;
 
+    /**
+     * Mapper for products.
+     */
     private final ProductMapper productMapper;
 
+    /**
+     * Mapper for product creation.
+     */
     private final ProductCreateMapper productCreateMapper;
 
+    /**
+     * Repository for managing categories.
+     */
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Repository for managing bucket items.
+     */
     private final BucketItemRepository bucketItemRepository;
 
+    /**
+     * Mapper for users.
+     */
     private final UserMapper userMapper;
 
     /**
@@ -45,12 +63,16 @@ public class MarketPlaceService {
      * @param createDto the product to be added
      */
     @Transactional
-    public void addNewProduct(final com.bobocode.dto.products.ProductCreateDto createDto) {
+    public void addNewProduct(
+            final com.bobocode.dto.products.ProductCreateDto createDto
+    ) {
         Product product = productCreateMapper.toEntity(createDto);
 
-        Category category = categoryRepository.findById(createDto.getCategoryId())
+        Category category = categoryRepository
+                .findById(createDto.getCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Category with ID " + createDto.getCategoryId() + " not found!"
+                        "Category with ID " + createDto.getCategoryId()
+                                + " not found!"
                 ));
 
         product.setCategory(category);
@@ -62,25 +84,25 @@ public class MarketPlaceService {
      * Removes a product from the marketplace by its ID.
      *
      * @param productId the ID of the product to remove
+     * @return list of affected users whose buckets contained the product
      * @throws EntityNotFoundException if the product is not found
      */
     @Transactional
     public List<UserDto> removeProduct(final long productId) {
         Product product = productRepository
                 .findProductByIsActiveAndId(true, productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product with id " + productId + " not found!"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Product with id " + productId + " not found!"
+                ));
 
-        // find all people with this product in a bucket
-        List<User> usersWithProduct = bucketItemRepository.findActiveUsersByActiveProductIdInBucket(productId);
+        List<User> usersWithProduct = bucketItemRepository
+                .findActiveUsersByActiveProductIdInBucket(productId);
 
-        // delete from bucket
         bucketItemRepository.deleteAllByProductId(productId);
 
-        // deactivate product
         product.setActive(false);
         productRepository.save(product);
 
-        // return list of users
         return usersWithProduct.stream()
                 .map(userMapper::toDto)
                 .toList();
@@ -102,9 +124,11 @@ public class MarketPlaceService {
         existingProduct.setName(productDto.getName());
         existingProduct.setPrice(productDto.getPrice());
 
-        Category category = categoryRepository.findByName(productDto.getCategoryName())
+        Category category = categoryRepository
+                .findByName(productDto.getCategoryName())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Category with name '" + productDto.getCategoryName() + "' not found!"
+                        "Category with name '" + productDto.getCategoryName()
+                                + "' not found!"
                 ));
 
         existingProduct.setCategory(category);
@@ -134,20 +158,24 @@ public class MarketPlaceService {
     public ProductDto getProductById(final long productId) {
         Product product = productRepository
                 .findProductByIsActiveAndId(true, productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product with id "  + productId + " not found!"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Product with id " + productId + " not found!"
+                ));
 
         return productMapper.toDto(product);
     }
 
-
     /**
-     * Universal method to update specific fields of a product within a transaction.
+     * Universal method to update specific fields of a product
+     * within a transaction.
      *
      * @param productId    the ID of the product to update
      * @param fieldUpdater a lambda representing the field update
      */
     @Transactional
-    public void updateProductField(final long productId, final Consumer<Product> fieldUpdater) {
+    public void updateProductField(
+            final long productId, final Consumer<Product> fieldUpdater
+    ) {
         Product existingProduct = productRepository
                 .findProductByIsActiveAndId(true, productId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -157,8 +185,5 @@ public class MarketPlaceService {
         fieldUpdater.accept(existingProduct);
 
         productRepository.save(existingProduct);
-
     }
-
-
 }

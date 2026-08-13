@@ -7,7 +7,6 @@ import com.bobocode.entities.bucket.Bucket;
 import com.bobocode.exceptions.EntityNotFoundException;
 import com.bobocode.mappers.orders.OrderItemMapper;
 import com.bobocode.mappers.orders.OrderMapper;
-import com.bobocode.repositories.bucket.BucketItemRepository;
 import com.bobocode.repositories.bucket.BucketRepository;
 import com.bobocode.repositories.orders.OrderRepository;
 import com.bobocode.repositories.users.UserRepository;
@@ -26,16 +25,29 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class OrderService {
 
+    /**
+     * Repository for order entities.
+     */
     private final OrderRepository orderRepository;
 
+    /**
+     * Repository for bucket entities.
+     */
     private final BucketRepository bucketRepository;
 
-    private final BucketItemRepository bucketItemRepository;
-
+    /**
+     * Repository for user entities.
+     */
     private final UserRepository userRepository;
 
+    /**
+     * Mapper for order items.
+     */
     private final OrderItemMapper orderItemMapper;
 
+    /**
+     * Mapper for orders.
+     */
     private final OrderMapper orderMapper;
 
     /**
@@ -45,26 +57,27 @@ public class OrderService {
      */
     @Transactional
     public void createOrderFromBucket(final long userId) {
-        // get User bucket
         Bucket bucket = bucketRepository.findByUserId(userId).orElse(null);
 
-        // if no bucket, nothing doing
         if (bucket == null || bucket.getItems().isEmpty()) {
             return;
         }
 
         Order order = new Order();
 
-        // find user
-        var user = userRepository.findUserByIdAndRoleNameAndIsActive(userId, "USER", true)
-                .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found!"));
+        var user = userRepository
+                .findUserByIdAndRoleNameAndIsActive(userId, "USER", true)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "User with ID " + userId + " not found!"
+                ));
 
         order.setUser(user);
         order.setPurchaseDate(LocalDateTime.now());
 
-        //convert
         List<OrderItem> orderItems = bucket.getItems().stream()
-                .map(bucketItem -> orderItemMapper.toOrderItem(bucketItem, order))
+                .map(bucketItem -> orderItemMapper.toOrderItem(
+                        bucketItem, order
+                ))
                 .toList();
 
         order.getItems().addAll(orderItems);

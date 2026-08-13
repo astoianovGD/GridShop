@@ -8,8 +8,8 @@ import com.bobocode.menus.products.BucketMenu;
 import com.bobocode.menus.products.CatalogMenu;
 import com.bobocode.services.bucket.BucketService;
 import com.bobocode.services.orders.OrderConsoleViewService;
-import com.bobocode.services.products.MarketPlaceService;
 import com.bobocode.services.orders.OrderService;
+import com.bobocode.services.products.MarketPlaceService;
 import com.bobocode.services.products.ProductsConsoleViewService;
 import com.bobocode.services.user.UserConsoleViewService;
 import com.bobocode.services.user.UserService;
@@ -56,9 +56,11 @@ public final class UserMenu {
     @NonNull
     private final OrderService orderService;
 
+    /** The order console view service. */
     @NonNull
     private final OrderConsoleViewService orderConsoleViewService;
 
+    /** The products console view service. */
     @NonNull
     private final ProductsConsoleViewService productsConsoleViewService;
 
@@ -102,8 +104,11 @@ public final class UserMenu {
      * @param user    the current user
      * @param scanner the scanner for input
      */
-    private void handleBrowseProducts(final UserDto user, final Scanner scanner) {
-       productsConsoleViewService.catalogAllProducts(marketPlaceService.getAllProducts());
+    private void handleBrowseProducts(final UserDto user,
+                                      final Scanner scanner) {
+        productsConsoleViewService.catalogAllProducts(
+                marketPlaceService.getAllProducts()
+        );
 
         while (true) {
             System.out.println("Wanna do anything else?");
@@ -203,38 +208,58 @@ public final class UserMenu {
 
         switch (option) {
             case "1" -> {
-                String newName = InputValidator.getValidName(scanner, "First Name");
-                userService.updateUserField(user.getId(), u -> u.setFirstname(newName));
+                String newName = InputValidator.getValidName(
+                        scanner, "First Name"
+                );
+                userService.updateUserField(
+                        user.getId(), u -> u.setFirstname(newName)
+                );
                 user.setFirstname(newName);
                 System.out.println("First Name updated!");
             }
             case "2" -> {
-                String newLastName = InputValidator.getValidName(scanner, "Last Name");
-                userService.updateUserField(user.getId(), u -> u.setLastname(newLastName));
+                String newLastName = InputValidator.getValidName(
+                        scanner, "Last Name"
+                );
+                userService.updateUserField(
+                        user.getId(), u -> u.setLastname(newLastName)
+                );
                 user.setLastname(newLastName);
                 System.out.println("Last Name updated!");
             }
             case "3" -> {
                 int newAge = InputValidator.getValidAge(scanner);
-                userService.updateUserField(user.getId(), u -> u.setAge(newAge));
+                userService.updateUserField(
+                        user.getId(), u -> u.setAge(newAge)
+                );
                 user.setAge(newAge);
                 System.out.println("Age updated!");
             }
             case "4" -> {
-                Gender newGender = InputValidator.getValidGenderFromConsole(scanner);
-                userService.updateUserField(user.getId(), u -> u.setGender(newGender));
+                Gender newGender = InputValidator.getValidGenderFromConsole(
+                        scanner
+                );
+                userService.updateUserField(
+                        user.getId(), u -> u.setGender(newGender)
+                );
                 user.setGender(newGender);
                 System.out.println("Gender updated!");
             }
             case "5" -> {
-                String newEmail = EmailValidator.getUniqueEmailFromConsole(scanner, userService);
-                userService.updateUserField(user.getId(), u -> u.setEmail(newEmail));
+                String newEmail = EmailValidator.getUniqueEmailFromConsole(
+                        scanner, userService
+                );
+                userService.updateUserField(
+                        user.getId(), u -> u.setEmail(newEmail)
+                );
                 user.setEmail(newEmail);
                 System.out.println("Email updated!");
             }
             case "6" -> {
                 String newPassword = InputValidator.getValidPassword(scanner);
-                userService.updateUserField(user.getId(), u -> u.setPassword(newPassword));
+                userService.updateUserField(
+                        user.getId(), u -> u.setPassword(newPassword)
+                );
                 user.setPassword(newPassword);
                 System.out.println("Password updated!");
             }

@@ -34,6 +34,9 @@ public final class BucketMenu {
     @NonNull
     private final OrderService orderService;
 
+    /**
+     * Service for rendering bucket views in the console.
+     */
     @NonNull
     private final BucketConsoleViewService bucketConsoleViewService;
 
@@ -113,4 +116,3 @@ public final class BucketMenu {
                 + "Purchase was made and saved to your history!");
     }
 }
-

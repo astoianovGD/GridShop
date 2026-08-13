@@ -144,6 +144,13 @@
                     <failOnViolation>false</failOnViolation>
                     <failsOnError>false</failsOnError>
                     <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+                    </sourceDirectories>
+                    <testSourceDirectories>
+                        <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+                    </testSourceDirectories>
+                    <excludes>**/generated/**,**/generated-sources/**</excludes>
                 </configuration>
                 <executions>
                     <execution>

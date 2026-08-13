@@ -35,6 +35,7 @@ public class ConsoleSessionManager {
     /** System initializer for startup checks. */
     private final SystemInitializer systemInitializer;
 
+    /** User mapper. */
     private final UserMapper userMapper;
 
     /**

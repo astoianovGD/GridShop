@@ -24,10 +24,29 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class BucketService {
 
+    /**
+     * Repository for managing bucket entities.
+     */
     private final BucketRepository bucketRepository;
+
+    /**
+     * Repository for managing bucket item entities.
+     */
     private final BucketItemRepository bucketItemRepository;
+
+    /**
+     * Repository for managing product entities.
+     */
     private final ProductRepository productRepository;
+
+    /**
+     * Repository for managing user entities.
+     */
     private final UserRepository userRepository;
+
+    /**
+     * Mapper for converting bucket items to DTOs.
+     */
     private final BucketItemMapper bucketItemMapper;
 
     /**
@@ -41,23 +60,21 @@ public class BucketService {
     public void addProductToBucket(
             final long userId, final long productId, final int amount
     ) {
-        // get or create bucket for user
         Bucket bucket = getOrCreateBucket(userId);
 
-        // check if product is active
-        Product product = productRepository.findProductByIsActiveAndId(true, productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product with ID " + productId + " not found!"));
+        Product product = productRepository
+                .findProductByIsActiveAndId(true, productId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Product with ID " + productId + " not found!"
+                ));
 
-        // check if item already in bucket, increase it
         BucketItem bucketItem = bucketItemRepository
                 .findByBucketIdAndProductId(bucket.getId(), productId)
                 .orElse(null);
 
         if (bucketItem != null) {
-            //increasing
             bucketItem.setQuantity(bucketItem.getQuantity() + amount);
         } else {
-            // if no item, create new
             bucketItem = new BucketItem();
             bucketItem.setBucket(bucket);
             bucketItem.setProduct(product);
@@ -83,7 +100,9 @@ public class BucketService {
             return;
         }
 
-        bucketItemRepository.deleteByBucketIdAndProductId(bucket.getId(), productId);
+        bucketItemRepository.deleteByBucketIdAndProductId(
+                bucket.getId(), productId
+        );
     }
 
     /**
@@ -114,11 +133,16 @@ public class BucketService {
     public Bucket getOrCreateBucket(final long userId) {
         return bucketRepository.findByUserId(userId)
                 .orElseGet(() -> {
-                    var user = userRepository.findUserByIdAndRoleNameAndIsActive(userId, "USER", true)
-                            .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found!"));
+                    var user = userRepository
+                            .findUserByIdAndRoleNameAndIsActive(
+                                    userId, "USER", true
+                            )
+                            .orElseThrow(() -> new EntityNotFoundException(
+                                    "User with ID " + userId + " not found!"
+                            ));
 
                     Bucket newBucket = new Bucket();
-                    newBucket.setUser(user); // @MapsId will automatically take user.getId() and write it to bucket_id
+                    newBucket.setUser(user);
 
                     return bucketRepository.saveAndFlush(newBucket);
                 });
@@ -132,6 +156,7 @@ public class BucketService {
     @Transactional
     public void clearBucket(final long userId) {
         bucketRepository.findByUserId(userId)
-                .ifPresent(bucket -> bucketItemRepository.deleteAllByBucketId(bucket.getId()));
+                .ifPresent(bucket -> bucketItemRepository
+                        .deleteAllByBucketId(bucket.getId()));
     }
 }
