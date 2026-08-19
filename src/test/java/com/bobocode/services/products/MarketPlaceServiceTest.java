@@ -117,7 +117,7 @@ public class MarketPlaceServiceTest {
         when(productRepository.findProductByIsActiveAndId(true, 1L)).thenReturn(Optional.of(existingProduct));
         when(categoryRepository.findByName("Electronics")).thenReturn(Optional.of(category));
 
-        marketPlaceService.editProduct(dto);
+        marketPlaceService.editProduct(dto.getId(), dto);
 
         assertEquals("Updated Name", existingProduct.getName());
         assertEquals(0, existingProduct.getPrice().compareTo(new BigDecimal("100.00")));
@@ -132,7 +132,7 @@ public class MarketPlaceServiceTest {
 
         when(productRepository.findProductByIsActiveAndId(true, 99L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> marketPlaceService.editProduct(dto));
+        assertThrows(EntityNotFoundException.class, () -> marketPlaceService.editProduct(dto.getId(), dto));
         verify(productRepository, never()).save(any());
     }
 
@@ -146,7 +146,7 @@ public class MarketPlaceServiceTest {
         when(productRepository.findProductByIsActiveAndId(true, 1L)).thenReturn(Optional.of(existingProduct));
         when(categoryRepository.findByName("Unknown")).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> marketPlaceService.editProduct(dto));
+        assertThrows(EntityNotFoundException.class, () -> marketPlaceService.editProduct(dto.getId(), dto));
         verify(productRepository, never()).save(any());
     }
 

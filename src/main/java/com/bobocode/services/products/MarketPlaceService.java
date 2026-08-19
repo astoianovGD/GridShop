@@ -114,11 +114,11 @@ public class MarketPlaceService {
      * @param productDto the product with updated information
      */
     @Transactional
-    public void editProduct(final ProductDto productDto) {
+    public void editProduct(final long id, final ProductDto productDto) {
         Product existingProduct = productRepository
-                .findProductByIsActiveAndId(true, productDto.getId())
+                .findProductByIsActiveAndId(true, id)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Product with id " + productDto.getId() + " not found!"
+                        "Product with id " + id + " not found!"
                 ));
 
         existingProduct.setName(productDto.getName());

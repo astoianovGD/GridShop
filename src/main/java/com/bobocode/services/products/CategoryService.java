@@ -153,4 +153,9 @@ public class CategoryService {
                         "Category with ID " + id + " not found!"
                 ));
     }
+
+    public CategoryDto getCategoryDtoById(final long id) {
+        Category category = getCategoryEntityById(id);
+        return categoryMapper.toDto(category);
+    }
 }

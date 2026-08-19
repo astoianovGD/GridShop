@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
-public class OrderService {
+public class    OrderService {
 
     /**
      * Repository for order entities.
@@ -100,5 +100,10 @@ public class OrderService {
         return orderRepository.findAllByUserId(userId).stream()
                 .map(orderMapper::toDto)
                 .toList();
+    }
+
+
+    public OrderDto getOrderById(long id) {
+        return orderMapper.toDto(orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No Order with id - " + id)));
     }
 }
