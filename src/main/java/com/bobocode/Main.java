@@ -3,6 +3,7 @@ package com.bobocode;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -25,6 +26,7 @@ public class Main {
      * @param args command line arguments
      */
     public static void main(final String[] args) {
+        Locale.setDefault(Locale.ENGLISH);
         TimeZone.setDefault(TimeZone
                 .getTimeZone("Europe/Kyiv")
         );

@@ -52,6 +52,8 @@ public class UserService {
      */
     @Transactional
     public void registerNewUser(final UserRegistrationDto newUser) {
+        validateEmailIsFree(newUser.getEmail());
+
         User user = userRegistrationMapper.toEntity(newUser);
 
         Role userRole = roleRepository.findByName("USER")
@@ -70,7 +72,7 @@ public class UserService {
      * @param userId the ID of the user to delete
      */
     @Transactional
-    public void deleteUserAccount(final long userId) {
+    public void deleteUserAccount(final Long userId) {
         User user = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
                         userId,
@@ -108,6 +110,10 @@ public class UserService {
                         "User with ID " + userId + " not found!"
                 ));
 
+        if (!existingUser.getEmail().equalsIgnoreCase(userDto.getEmail())) {
+            validateEmailIsFree(userDto.getEmail());
+        }
+
         existingUser.setFirstname(userDto.getFirstname());
         existingUser.setLastname(userDto.getLastname());
         existingUser.setAge(userDto.getAge());
@@ -137,7 +143,7 @@ public class UserService {
      * @return the requested user as a DTO
      * @throws EntityNotFoundException if the user is not found
      */
-    public UserDto getUserById(final long userId) {
+    public UserDto getUserById(final Long userId) {
         User user = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
                         userId,
@@ -183,7 +189,7 @@ public class UserService {
      */
     @Transactional
     public void updateUserField(
-            final long userId, final Consumer<User> fieldUpdater
+            final Long userId, final Consumer<User> fieldUpdater
     ) {
         User existingUser = userRepository
                 .findUserByIdAndRoleNameAndIsActive(

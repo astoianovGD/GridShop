@@ -23,15 +23,16 @@ public class RoleIntegrationTest {
     @Test
     void shouldSaveRoleAndUsersCascading() {
         Role role = new Role();
-        role.setId(10L);
         role.setName("MANAGER");
         role.setUsers(new ArrayList<>());
 
         User user = new User();
         user.setEmail("manager@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("John");
         user.setLastname("Doe");
+        user.setAge(35);
+        user.setGender(com.bobocode.enums.Gender.MALE);
         user.setRole(role);
         role.getUsers().add(user);
 

@@ -56,9 +56,11 @@ public class BucketItemIntegrationTest {
 
         testUser = new User();
         testUser.setEmail("itemtest@test.com");
-        testUser.setPassword("pass");
+        testUser.setPassword("password123");
         testUser.setFirstname("Alex");
         testUser.setLastname("Stoianov");
+        testUser.setAge(25);
+        testUser.setGender(com.bobocode.enums.Gender.MALE);
         testUser.setRole(role);
         userRepository.save(testUser);
 

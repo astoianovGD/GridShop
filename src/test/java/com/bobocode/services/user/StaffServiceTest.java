@@ -4,6 +4,7 @@ import com.bobocode.dto.users.StaffDto;
 import com.bobocode.dto.users.StaffRegistrationDto;
 import com.bobocode.entities.users.Role;
 import com.bobocode.entities.users.User;
+import com.bobocode.exceptions.EmailAlreadyExistsException;
 import com.bobocode.exceptions.EntityNotFoundException;
 import com.bobocode.mappers.users.StaffMapper;
 import com.bobocode.mappers.users.StaffRegistrationMapper;
@@ -37,10 +38,12 @@ public class StaffServiceTest {
     @Test
     void shouldAddNewStaffSuccessfully() {
         StaffRegistrationDto regDto = new StaffRegistrationDto();
+        regDto.setEmail("new@staff.com");
         User user = new User();
         Role staffRole = new Role();
         staffRole.setName("STAFF");
 
+        when(userRepository.existsByEmail("new@staff.com")).thenReturn(false);
         when(staffRegistrationMapper.toEntity(regDto)).thenReturn(user);
         when(roleRepository.findByName("STAFF")).thenReturn(Optional.of(staffRole));
 
@@ -51,10 +54,23 @@ public class StaffServiceTest {
     }
 
     @Test
+    void shouldThrowEmailAlreadyExistsWhenAddingStaffWithTakenEmail() {
+        StaffRegistrationDto regDto = new StaffRegistrationDto();
+        regDto.setEmail("taken@staff.com");
+
+        when(userRepository.existsByEmail("taken@staff.com")).thenReturn(true);
+
+        assertThrows(EmailAlreadyExistsException.class, () -> staffService.addNewStaff(regDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
     void shouldThrowEntityNotFoundWhenStaffRoleNotFoundOnAdd() {
         StaffRegistrationDto regDto = new StaffRegistrationDto();
+        regDto.setEmail("new@staff.com");
         User user = new User();
 
+        when(userRepository.existsByEmail("new@staff.com")).thenReturn(false);
         when(staffRegistrationMapper.toEntity(regDto)).thenReturn(user);
         when(roleRepository.findByName("STAFF")).thenReturn(Optional.empty());
 
@@ -67,22 +83,41 @@ public class StaffServiceTest {
         StaffDto staffDto = new StaffDto();
         staffDto.setFirstname("John");
         staffDto.setLastname("Doe");
-        staffDto.setEmail("john@staff.com");
+        staffDto.setEmail("new@staff.com");
         staffDto.setPassword("pass1234");
 
         User existingStaff = new User();
         existingStaff.setId(1L);
+        existingStaff.setEmail("old@staff.com");
 
         when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "STAFF", true))
                 .thenReturn(Optional.of(existingStaff));
+        when(userRepository.existsByEmail("new@staff.com")).thenReturn(false);
 
         staffService.editStaff(1L, staffDto);
 
         assertEquals("John", existingStaff.getFirstname());
         assertEquals("Doe", existingStaff.getLastname());
-        assertEquals("john@staff.com", existingStaff.getEmail());
+        assertEquals("new@staff.com", existingStaff.getEmail());
         assertEquals("pass1234", existingStaff.getPassword());
         verify(userRepository).save(existingStaff);
+    }
+
+    @Test
+    void shouldThrowEmailAlreadyExistsWhenEditingStaffWithTakenEmail() {
+        StaffDto staffDto = new StaffDto();
+        staffDto.setEmail("taken@staff.com");
+
+        User existingStaff = new User();
+        existingStaff.setId(1L);
+        existingStaff.setEmail("old@staff.com");
+
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "STAFF", true))
+                .thenReturn(Optional.of(existingStaff));
+        when(userRepository.existsByEmail("taken@staff.com")).thenReturn(true);
+
+        assertThrows(EmailAlreadyExistsException.class, () -> staffService.editStaff(1L, staffDto));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
@@ -190,5 +225,19 @@ public class StaffServiceTest {
 
         assertThrows(EntityNotFoundException.class, () -> staffService.updateStaffField(99L, u -> u.setFirstname("Test")));
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldValidateEmailIsFreeSuccessfully() {
+        when(userRepository.existsByEmail("free@staff.com")).thenReturn(false);
+
+        assertDoesNotThrow(() -> staffService.validateEmailIsFree("free@staff.com"));
+    }
+
+    @Test
+    void shouldThrowEmailAlreadyExistsWhenEmailIsTaken() {
+        when(userRepository.existsByEmail("taken@staff.com")).thenReturn(true);
+
+        assertThrows(EmailAlreadyExistsException.class, () -> staffService.validateEmailIsFree("taken@staff.com"));
     }
 }

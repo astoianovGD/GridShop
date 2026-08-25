@@ -61,9 +61,11 @@ public class JpaLifecycleTest {
 
         User user = new User();
         user.setEmail("test@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("Alex");
         user.setLastname("Stoianov");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.MALE);
         user.setRole(userRole);
         testUser = userRepository.save(user);
     }

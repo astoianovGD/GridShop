@@ -58,7 +58,7 @@ public class BucketService {
      */
     @Transactional
     public void addProductToBucket(
-            final long userId, final long productId, final int amount
+            final Long userId, final Long productId, final Integer amount
     ) {
         Bucket bucket = getOrCreateBucket(userId);
 
@@ -93,7 +93,7 @@ public class BucketService {
      */
     @Transactional
     public void removeProductFromBucket(
-            final long userId, final long productId
+            final Long userId, final Long productId
     ) {
         Bucket bucket = bucketRepository.findByUserId(userId).orElse(null);
         if (bucket == null) {
@@ -112,7 +112,7 @@ public class BucketService {
      * @return a list of bucket item DTOs containing product info and quantity
      */
     @Transactional(readOnly = true)
-    public List<BucketItemDto> getProductsFromBucket(final long userId) {
+    public List<BucketItemDto> getProductsFromBucket(final Long userId) {
         Bucket bucket = bucketRepository.findByUserId(userId).orElse(null);
         if (bucket == null) {
             return List.of();
@@ -130,7 +130,7 @@ public class BucketService {
      * @return the Bucket entity
      */
     @Transactional
-    public Bucket getOrCreateBucket(final long userId) {
+    public Bucket getOrCreateBucket(final Long userId) {
         return bucketRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     var user = userRepository
@@ -154,7 +154,7 @@ public class BucketService {
      * @param userId the ID of the user
      */
     @Transactional
-    public void clearBucket(final long userId) {
+    public void clearBucket(final Long userId) {
         bucketRepository.findByUserId(userId)
                 .ifPresent(bucket -> bucketItemRepository
                         .deleteAllByBucketId(bucket.getId()));

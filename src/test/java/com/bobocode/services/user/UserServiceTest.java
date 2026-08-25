@@ -38,10 +38,12 @@ public class UserServiceTest {
     @Test
     void shouldRegisterNewUserSuccessfully() {
         UserRegistrationDto regDto = new UserRegistrationDto();
+        regDto.setEmail("new@test.com");
         User user = new User();
         Role userRole = new Role();
         userRole.setName("USER");
 
+        when(userRepository.existsByEmail("new@test.com")).thenReturn(false);
         when(userRegistrationMapper.toEntity(regDto)).thenReturn(user);
         when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
 
@@ -52,10 +54,23 @@ public class UserServiceTest {
     }
 
     @Test
+    void shouldThrowEmailAlreadyExistsWhenRegisteringUserWithTakenEmail() {
+        UserRegistrationDto regDto = new UserRegistrationDto();
+        regDto.setEmail("taken@test.com");
+
+        when(userRepository.existsByEmail("taken@test.com")).thenReturn(true);
+
+        assertThrows(EmailAlreadyExistsException.class, () -> userService.registerNewUser(regDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
     void shouldThrowEntityNotFoundWhenUserRoleNotFoundOnRegistration() {
         UserRegistrationDto regDto = new UserRegistrationDto();
+        regDto.setEmail("new@test.com");
         User user = new User();
 
+        when(userRepository.existsByEmail("new@test.com")).thenReturn(false);
         when(userRegistrationMapper.toEntity(regDto)).thenReturn(user);
         when(roleRepository.findByName("USER")).thenReturn(Optional.empty());
 
@@ -93,23 +108,42 @@ public class UserServiceTest {
         dto.setFirstname("Alex");
         dto.setLastname("Stoianov");
         dto.setAge(20);
-        dto.setEmail("alex@test.com");
+        dto.setEmail("new-email@test.com");
         dto.setPassword("pass1234");
 
         User existingUser = new User();
         existingUser.setId(1L);
+        existingUser.setEmail("old-email@test.com");
 
         when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "USER", true))
                 .thenReturn(Optional.of(existingUser));
+        when(userRepository.existsByEmail("new-email@test.com")).thenReturn(false);
 
         userService.editPersonalInformation(1L, dto);
 
         assertEquals("Alex", existingUser.getFirstname());
         assertEquals("Stoianov", existingUser.getLastname());
         assertEquals(20, existingUser.getAge());
-        assertEquals("alex@test.com", existingUser.getEmail());
+        assertEquals("new-email@test.com", existingUser.getEmail());
         assertEquals("pass1234", existingUser.getPassword());
         verify(userRepository).save(existingUser);
+    }
+
+    @Test
+    void shouldThrowEmailAlreadyExistsWhenEditingUserWithTakenEmail() {
+        UserDto dto = new UserDto();
+        dto.setEmail("taken@test.com");
+
+        User existingUser = new User();
+        existingUser.setId(1L);
+        existingUser.setEmail("old-email@test.com");
+
+        when(userRepository.findUserByIdAndRoleNameAndIsActive(1L, "USER", true))
+                .thenReturn(Optional.of(existingUser));
+        when(userRepository.existsByEmail("taken@test.com")).thenReturn(true);
+
+        assertThrows(EmailAlreadyExistsException.class, () -> userService.editPersonalInformation(1L, dto));
+        verify(userRepository, never()).save(any());
     }
 
     @Test

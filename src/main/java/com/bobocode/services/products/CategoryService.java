@@ -64,7 +64,7 @@ public class CategoryService {
      * @param categoryDto the new name of the category
      * @param id          the ID of the category to update
      */
-    public void editCategory(final CategoryDto categoryDto, final long id) {
+    public void editCategory(final CategoryDto categoryDto, final Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Category with id " + id + " not found!"
@@ -91,7 +91,7 @@ public class CategoryService {
      * @throws IllegalStateException   if the category contains products
      */
     @Transactional
-    public void removeCategory(final long categoryId) {
+    public void removeCategory(final Long categoryId) {
         if (!categoryRepository.existsById(categoryId)) {
             throw new EntityNotFoundException(
                     "Category with id " + categoryId + " not found!"
@@ -137,7 +137,7 @@ public class CategoryService {
      * @param categoryId the ID to check
      * @return true if exists, false otherwise
      */
-    public boolean isCategoryExists(final long categoryId) {
+    public boolean isCategoryExists(final Long categoryId) {
         return categoryRepository.existsById(categoryId);
     }
 
@@ -147,14 +147,14 @@ public class CategoryService {
      * @param id the category ID
      * @return the category entity
      */
-    public Category getCategoryEntityById(final long id) {
+    public Category getCategoryEntityById(final Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Category with ID " + id + " not found!"
                 ));
     }
 
-    public CategoryDto getCategoryDtoById(final long id) {
+    public CategoryDto getCategoryDtoById(final Long id) {
         Category category = getCategoryEntityById(id);
         return categoryMapper.toDto(category);
     }

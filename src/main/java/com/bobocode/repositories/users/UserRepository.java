@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return a list of matching users
      */
     List<User> findAllByRoleNameAndIsActive(
-            String roleName, boolean isActive
+            String roleName, Boolean isActive
     );
 
     /**
@@ -41,7 +41,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return an optional containing the user if found
      */
     Optional<User> findUserByIdAndRoleNameAndIsActive(
-            long id, String roleName, boolean isActive
+            Long id, String roleName, Boolean isActive
     );
 
     /**

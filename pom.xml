@@ -20,6 +20,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit-platform.version>6.1.1</junit-platform.version>
+        <lombok.version>1.18.46</lombok.version>
     </properties>
 
 

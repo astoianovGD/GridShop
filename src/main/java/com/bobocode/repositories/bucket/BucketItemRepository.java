@@ -25,7 +25,7 @@ public interface BucketItemRepository extends JpaRepository<BucketItem, Long> {
      * @return an optional containing the bucket item if found
      */
     Optional<BucketItem> findByBucketIdAndProductId(
-            long bucketId, long productId
+            Long bucketId, Long productId
     );
 
     /**
@@ -34,14 +34,14 @@ public interface BucketItemRepository extends JpaRepository<BucketItem, Long> {
      * @param bucketId  the bucket ID
      * @param productId the product ID
      */
-    void deleteByBucketIdAndProductId(long bucketId, long productId);
+    void deleteByBucketIdAndProductId(Long bucketId, Long productId);
 
     /**
      * Deletes all bucket items belonging to a specified bucket ID.
      *
      * @param bucketId the bucket ID
      */
-    void deleteAllByBucketId(long bucketId);
+    void deleteAllByBucketId(Long bucketId);
 
     /**
      * Finds active users who have an active product in their bucket.
@@ -60,7 +60,7 @@ public interface BucketItemRepository extends JpaRepository<BucketItem, Long> {
       AND u.isActive = true
     """)
     List<User> findActiveUsersByActiveProductIdInBucket(
-            @Param("productId") long productId
+            @Param("productId") Long productId
     );
 
     /**
@@ -70,5 +70,5 @@ public interface BucketItemRepository extends JpaRepository<BucketItem, Long> {
      */
     @Modifying
     @Query("DELETE FROM BucketItem b WHERE b.product.id = :productId")
-    void deleteAllByProductId(@Param("productId") long productId);
+    void deleteAllByProductId(@Param("productId") Long productId);
 }

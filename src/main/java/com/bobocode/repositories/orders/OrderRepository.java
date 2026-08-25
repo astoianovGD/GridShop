@@ -27,5 +27,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         LEFT JOIN FETCH i.product
         WHERE o.user.id = :userId
         """)
-    List<Order> findAllByUserId(@Param("userId") long userId);
+    List<Order> findAllByUserId(@Param("userId") Long userId);
 }

@@ -1,5 +1,8 @@
 package com.bobocode.dto.products;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 /**
@@ -10,10 +13,14 @@ public class CategoryDto {
     /**
      * The unique identifier of the category.
      */
-    private long id;
+    @NotNull
+    private Long id;
 
     /**
      * The name of the category.
      */
+    @NotNull
+    @NotBlank
+    @Size(max = 50)
     private String name;
 }

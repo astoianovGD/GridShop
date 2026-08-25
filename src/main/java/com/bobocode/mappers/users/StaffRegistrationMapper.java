@@ -22,8 +22,6 @@ public interface StaffRegistrationMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", ignore = true)
-    @Mapping(target = "age", ignore = true)
-    @Mapping(target = "gender", ignore = true)
     @Mapping(target = "active", constant = "true")
     User toEntity(StaffRegistrationDto registrationDto);
 }

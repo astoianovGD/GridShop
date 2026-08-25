@@ -33,7 +33,7 @@ public class UserRegistrationMapperTest {
 
         // Assert
         assertNotNull(user);
-        assertEquals(0L, user.getId()); // ignored
+        assertNull(user.getId()); // ignored
         assertNull(user.getRole()); // ignored
         assertTrue(user.isActive()); // constant = "true"
         assertEquals("reg@test.com", user.getEmail());

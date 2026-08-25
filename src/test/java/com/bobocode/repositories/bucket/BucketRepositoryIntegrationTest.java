@@ -40,6 +40,8 @@ public class BucketRepositoryIntegrationTest {
         user.setPassword("securepass");
         user.setFirstname("Alex");
         user.setLastname("Stoianov");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.MALE);
         user.setActive(true);
         user.setRole(role);
         userRepository.save(user);

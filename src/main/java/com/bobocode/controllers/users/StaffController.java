@@ -5,6 +5,7 @@ import com.bobocode.dto.users.StaffRegistrationDto;
 import com.bobocode.services.user.StaffService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class StaffController {
      * @return the matching staff DTO
      */
     @GetMapping("/{id}")
-    public StaffDto getStaffById(@PathVariable long id) {
+    public StaffDto getStaffById(@PathVariable Long id) {
         return staffService.getStaffById(id);
     }
 
@@ -47,7 +48,7 @@ public class StaffController {
      * @param staffDto the payload containing updated details
      */
     @PutMapping("/{id}")
-    public void updateStaff(@PathVariable long id, @RequestBody StaffDto staffDto) {
+    public void updateStaff(@PathVariable Long id, @RequestBody @Validated StaffDto staffDto) {
         staffService.editStaff(id, staffDto);
     }
 
@@ -59,7 +60,7 @@ public class StaffController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) //201
-    public void createNewStaff(@RequestBody StaffRegistrationDto staffRegistrationDto) {
+    public void createNewStaff(@RequestBody @Validated StaffRegistrationDto staffRegistrationDto) {
         staffService.addNewStaff(staffRegistrationDto);
     }
 
@@ -71,7 +72,7 @@ public class StaffController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT) //204
-    public void deleteStaffById(@PathVariable long id) {
+    public void deleteStaffById(@PathVariable Long id) {
         staffService.removeStaff(id);
     }
 }

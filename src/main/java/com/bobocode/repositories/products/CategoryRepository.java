@@ -36,7 +36,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
      * @param id the category ID
      * @return true if the category exists, false otherwise
      */
-    boolean existsById(long id);
+    boolean existsById(Long id);
 
     /**
      * Retrieves a category name by its ID.

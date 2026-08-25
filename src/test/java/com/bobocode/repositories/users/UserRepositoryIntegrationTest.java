@@ -39,9 +39,11 @@ public class UserRepositoryIntegrationTest {
     void shouldFindAllByRoleNameAndIsActive() {
         User user = new User();
         user.setEmail("role.active@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("John");
         user.setLastname("Doe");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.MALE);
         user.setActive(true);
         user.setRole(testRole);
         userRepository.save(user);
@@ -56,9 +58,11 @@ public class UserRepositoryIntegrationTest {
     void shouldCheckExistsByEmail() {
         User user = new User();
         user.setEmail("exists@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("Jane");
         user.setLastname("Doe");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.FEMALE);
         user.setActive(true);
         user.setRole(testRole);
         userRepository.save(user);
@@ -74,9 +78,11 @@ public class UserRepositoryIntegrationTest {
     void shouldFindUserByIdAndRoleNameAndIsActive() {
         User user = new User();
         user.setEmail("id.role@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("Bob");
         user.setLastname("Builder");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.MALE);
         user.setActive(true);
         user.setRole(testRole);
         User saved = userRepository.save(user);
@@ -91,9 +97,11 @@ public class UserRepositoryIntegrationTest {
     void shouldFindByEmail() {
         User user = new User();
         user.setEmail("find.email@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("Alice");
         user.setLastname("Smith");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.FEMALE);
         user.setActive(true);
         user.setRole(testRole);
         userRepository.save(user);
@@ -108,9 +116,11 @@ public class UserRepositoryIntegrationTest {
     void shouldCheckExistsByRoleName() {
         User user = new User();
         user.setEmail("role.check@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("Charlie");
         user.setLastname("Brown");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.MALE);
         user.setActive(true);
         user.setRole(testRole);
         userRepository.save(user);

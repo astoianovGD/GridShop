@@ -5,6 +5,7 @@ import com.bobocode.dto.bucket.BucketItemDto;
 import com.bobocode.services.bucket.BucketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class BucketController {
      * GET /api/v1/users/1/bucket
      */
     @GetMapping
-    public List<BucketItemDto> getBucketItemsByUserId(@PathVariable long userId) {
+    public List<BucketItemDto> getBucketItemsByUserId(@PathVariable Long userId) {
         return bucketService.getProductsFromBucket(userId);
     }
 
@@ -31,8 +32,8 @@ public class BucketController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void addProductToBucket(@PathVariable long userId,
-                                   @RequestBody AddProductRequest addProductRequest) {
+    public void addProductToBucket(@PathVariable Long userId,
+                                   @RequestBody @Validated AddProductRequest addProductRequest) {
         bucketService.addProductToBucket(userId, addProductRequest.getProductId(), addProductRequest.getAmount());
     }
 
@@ -42,8 +43,8 @@ public class BucketController {
      */
     @DeleteMapping("/items/{productId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeProductFromBucket(@PathVariable long userId,
-                                        @PathVariable long productId) {
+    public void removeProductFromBucket(@PathVariable Long userId,
+                                        @PathVariable Long productId) {
         bucketService.removeProductFromBucket(userId, productId);
     }
 }

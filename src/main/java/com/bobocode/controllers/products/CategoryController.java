@@ -5,6 +5,7 @@ import com.bobocode.dto.products.CategoryDto;
 import com.bobocode.services.products.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class CategoryController {
      * @return the matching category DTO
      */
     @GetMapping("/{id}")
-    public CategoryDto getCategoryById(@PathVariable long id) {
+    public CategoryDto getCategoryById(@PathVariable Long id) {
         return categoryService.getCategoryDtoById(id);
     }
 
@@ -47,7 +48,7 @@ public class CategoryController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void addNewCategory(@RequestBody CategoryCreateDto categoryCreateDto) {
+    public void addNewCategory(@RequestBody @Validated CategoryCreateDto categoryCreateDto) {
         categoryService.addNewCategory(categoryCreateDto);
     }
 
@@ -59,7 +60,7 @@ public class CategoryController {
      * @param categoryDto the payload containing updated category details
      */
     @PutMapping("/{id}")
-    public void editCategoryById(@PathVariable long id, @RequestBody CategoryDto categoryDto) {
+    public void editCategoryById(@PathVariable Long id, @RequestBody @Validated CategoryDto categoryDto) {
         categoryService.editCategory(categoryDto, id);
     }
 
@@ -71,7 +72,7 @@ public class CategoryController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategoryById(@PathVariable long id) {
+    public void deleteCategoryById(@PathVariable Long id) {
         categoryService.removeCategory(id);
     }
 }

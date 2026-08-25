@@ -20,7 +20,7 @@ public class OrderController {
      * GET /api/v1/users/1/orders
      */
     @GetMapping("/users/{userId}/orders")
-    public List<OrderDto> getAllOrdersByUserId(@PathVariable long userId) {
+    public List<OrderDto> getAllOrdersByUserId(@PathVariable Long userId) {
         return orderService.getUserOrders(userId);
     }
 
@@ -29,7 +29,7 @@ public class OrderController {
      * GET /api/v1/orders/5
      */
     @GetMapping("/orders/{id}")
-    public OrderDto getOrderById(@PathVariable long id) {
+    public OrderDto getOrderById(@PathVariable Long id) {
         return orderService.getOrderById(id);
     }
 
@@ -39,7 +39,7 @@ public class OrderController {
      */
     @PostMapping("/users/{userId}/orders")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createOrder(@PathVariable long userId) {
+    public void createOrder(@PathVariable Long userId) {
         orderService.createOrderFromBucket(userId);
     }
 }

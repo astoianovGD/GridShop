@@ -5,6 +5,7 @@ import com.bobocode.dto.users.UserRegistrationDto;
 import com.bobocode.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class UserController {
      * @return the matching user DTO
      */
     @GetMapping("/{id}")
-    public UserDto getUserById(@PathVariable long id) {
+    public UserDto getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
@@ -47,7 +48,7 @@ public class UserController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201 Created
-    public void createNewUser(@RequestBody UserRegistrationDto userRegistrationDto) {
+    public void createNewUser(@RequestBody @Validated UserRegistrationDto userRegistrationDto) {
         userService.registerNewUser(userRegistrationDto);
     }
 
@@ -59,7 +60,7 @@ public class UserController {
      * @param userDto the payload containing updated details
      */
     @PutMapping("/{id}")
-    public void updateUser(@PathVariable long id, @RequestBody UserDto userDto) {
+    public void updateUser(@PathVariable Long id, @RequestBody @Validated UserDto userDto) {
         userService.editPersonalInformation(id, userDto);
     }
 
@@ -71,7 +72,7 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204 No Content
-    public void deleteUser(@PathVariable long id) {
+    public void deleteUser(@PathVariable Long id) {
         userService.deleteUserAccount(id);
     }
 }

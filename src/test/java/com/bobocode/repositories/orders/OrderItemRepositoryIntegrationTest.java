@@ -52,9 +52,11 @@ public class OrderItemRepositoryIntegrationTest {
 
         User user = new User();
         user.setEmail("itemrepo@test.com");
-        user.setPassword("pass");
+        user.setPassword("password123");
         user.setFirstname("Alex");
         user.setLastname("Stoianov");
+        user.setAge(25);
+        user.setGender(com.bobocode.enums.Gender.MALE);
         user.setActive(true);
         user.setRole(role);
         userRepository.save(user);

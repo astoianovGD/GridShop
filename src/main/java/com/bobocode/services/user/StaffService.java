@@ -4,6 +4,7 @@ import com.bobocode.dto.users.StaffDto;
 import com.bobocode.dto.users.StaffRegistrationDto;
 import com.bobocode.entities.users.Role;
 import com.bobocode.entities.users.User;
+import com.bobocode.exceptions.EmailAlreadyExistsException;
 import com.bobocode.exceptions.EntityNotFoundException;
 import com.bobocode.mappers.users.StaffMapper;
 import com.bobocode.mappers.users.StaffRegistrationMapper;
@@ -51,6 +52,8 @@ public class StaffService {
      */
     @Transactional
     public void addNewStaff(final StaffRegistrationDto newStaff) {
+        validateEmailIsFree(newStaff.getEmail());
+
         User user = staffRegistrationMapper.toEntity(newStaff);
 
         Role role = roleRepository.findByName("STAFF")
@@ -70,7 +73,7 @@ public class StaffService {
      * @param staffDto the updated staff member details
      */
     @Transactional
-    public void editStaff(final long staffId, final StaffDto staffDto) {
+    public void editStaff(final Long staffId, final StaffDto staffDto) {
         User existingStaff = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
                         staffId,
@@ -79,6 +82,10 @@ public class StaffService {
                 ).orElseThrow(() -> new EntityNotFoundException(
                         "STAFF with ID " + staffId + " not found!"
                 ));
+
+        if (!existingStaff.getEmail().equalsIgnoreCase(staffDto.getEmail())) {
+            validateEmailIsFree(staffDto.getEmail());
+        }
 
         existingStaff.setFirstname(staffDto.getFirstname());
         existingStaff.setLastname(staffDto.getLastname());
@@ -95,7 +102,7 @@ public class StaffService {
      * @throws EntityNotFoundException if the staff member is not found
      */
     @Transactional
-    public void removeStaff(final long staffId) {
+    public void removeStaff(final Long staffId) {
         User user = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
                         staffId,
@@ -128,7 +135,7 @@ public class StaffService {
      * @return the staff member
      * @throws EntityNotFoundException if the staff member is not found
      */
-    public StaffDto getStaffById(final long staffId) {
+    public StaffDto getStaffById(final Long staffId) {
         User user = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
                         staffId, "STAFF", true
@@ -147,7 +154,7 @@ public class StaffService {
      */
     @Transactional
     public void updateStaffField(
-            final long staffId, final Consumer<User> fieldUpdater
+            final Long staffId, final Consumer<User> fieldUpdater
     ) {
         User existingStaff = userRepository
                 .findUserByIdAndRoleNameAndIsActive(
@@ -160,5 +167,30 @@ public class StaffService {
 
         fieldUpdater.accept(existingStaff);
         userRepository.save(existingStaff);
+    }
+
+    /**
+     * Checks if a given email is already taken.
+     *
+     * @param email the email to check
+     * @return true if the email is registered, false otherwise
+     */
+    public boolean isEmailTaken(final String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * Validates that the provided email is not already registered.
+     *
+     * @param email the email to validate
+     * @throws EmailAlreadyExistsException if the email is already in use
+     */
+    public void validateEmailIsFree(final String email) {
+        if (isEmailTaken(email)) {
+            throw new EmailAlreadyExistsException(
+                    "Error 409: This email is already registered! "
+                            + "Please try another one."
+            );
+        }
     }
 }

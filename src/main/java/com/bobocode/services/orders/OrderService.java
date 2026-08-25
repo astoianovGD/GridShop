@@ -56,7 +56,7 @@ public class    OrderService {
      * @param userId the ID of the user making the purchase
      */
     @Transactional
-    public void createOrderFromBucket(final long userId) {
+    public void createOrderFromBucket(final Long userId) {
         Bucket bucket = bucketRepository.findByUserId(userId).orElse(null);
 
         if (bucket == null || bucket.getItems().isEmpty()) {
@@ -96,14 +96,14 @@ public class    OrderService {
      * @return a list of user's orders DTOs
      */
     @Transactional
-    public List<OrderDto> getUserOrders(final long userId) {
+    public List<OrderDto> getUserOrders(final Long userId) {
         return orderRepository.findAllByUserId(userId).stream()
                 .map(orderMapper::toDto)
                 .toList();
     }
 
 
-    public OrderDto getOrderById(long id) {
+    public OrderDto getOrderById(Long id) {
         return orderMapper.toDto(orderRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No Order with id - " + id)));
     }
 }

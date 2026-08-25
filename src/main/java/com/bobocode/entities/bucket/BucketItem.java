@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -27,13 +29,14 @@ public class BucketItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "bucket_item_id")
-    private long bucketItemId;
+    private Long bucketItemId;
 
     /**
      * The bucket to which this item belongs.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bucket_id", nullable = false)
+    @NotNull
     private Bucket bucket;
 
     /**
@@ -41,11 +44,14 @@ public class BucketItem {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @NotNull
     private Product product;
 
     /**
      * The quantity of the product in the bucket.
      */
     @Column(nullable = false)
-    private int quantity;
+    @NotNull
+    @Min(1)
+    private Integer quantity;
 }

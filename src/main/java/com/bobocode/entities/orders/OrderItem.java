@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -28,13 +30,14 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_item_id")
-    private long orderItemId;
+    private Long orderItemId;
 
     /**
      * The order to which this item belongs.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
+    @NotNull
     private Order order;
 
     /**
@@ -42,17 +45,22 @@ public class OrderItem {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @NotNull
     private Product product;
 
     /**
      * The price of the product at the time of purchase.
      */
     @Column(nullable = false)
+    @NotNull
+    @Min(0)
     private BigDecimal priceAtPurchase;
 
     /**
      * The quantity of the product purchased.
      */
     @Column(nullable = false)
-    private int quantity;
+    @NotNull
+    @Min(1)
+    private Integer quantity;
 }

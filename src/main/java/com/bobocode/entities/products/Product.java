@@ -9,6 +9,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,18 +35,23 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")
-    private long id;
+    private Long id;
 
     /**
      * The name of the product.
      */
     @Column(name = "name", nullable = false)
+    @NotBlank
+    @NotNull
+    @Size(max = 50)
     private String name;
 
     /**
      * The price of the product.
      */
     @Column(name = "price", nullable = false)
+    @NotNull
+    @Min(0)
     private BigDecimal price;
 
     /**
@@ -50,11 +59,13 @@ public class Product {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @NotNull
     private Category category;
 
     /**
      * Indicates whether the product is active.
      */
     @Column(name = "is_active")
+    @NotNull
     private boolean isActive;
 }

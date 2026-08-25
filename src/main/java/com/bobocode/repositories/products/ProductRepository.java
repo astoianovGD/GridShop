@@ -24,7 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @return a list of matching products
      */
     List<Product> findByNameStartingWithIgnoreCaseAndIsActive(
-            String name, boolean isActive
+            String name, Boolean isActive
     );
 
     /**
@@ -35,7 +35,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @return a list of matching products
      */
     List<Product> findByPriceGreaterThanAndIsActive(
-            BigDecimal price, boolean isActive
+            BigDecimal price, Boolean isActive
     );
 
     /**
@@ -46,7 +46,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @return a list of matching products
      */
     List<Product> findByPriceLessThanAndIsActive(
-            BigDecimal price, boolean isActive
+            BigDecimal price, Boolean isActive
     );
 
     /**
@@ -58,7 +58,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @return a list of matching products
      */
     List<Product> findByNameContainingIgnoreCaseAndIsActive(
-            String name, boolean isActive
+            String name, Boolean isActive
     );
 
     /**
@@ -68,7 +68,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @param sort     the sorting criteria
      * @return a sorted list of active products
      */
-    List<Product> findAllByIsActive(boolean isActive, Sort sort);
+    List<Product> findAllByIsActive(Boolean isActive, Sort sort);
 
     /**
      * Finds all products matching the specified active status.
@@ -76,7 +76,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @param isActive the active status
      * @return a list of products
      */
-    List<Product> findAllByIsActive(boolean isActive);
+    List<Product> findAllByIsActive(Boolean isActive);
 
     /**
      * Finds a product by its active status and ID.
@@ -85,7 +85,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @param id       the product ID
      * @return an optional containing the product if found
      */
-    Optional<Product> findProductByIsActiveAndId(boolean isActive, long id);
+    Optional<Product> findProductByIsActiveAndId(Boolean isActive, Long id);
 
     /**
      * Checks if any products exist for a given category ID.
@@ -93,5 +93,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @param categoryId the category ID
      * @return true if products exist, false otherwise
      */
-    boolean existsByCategoryId(long categoryId);
+    boolean existsByCategoryId(Long categoryId);
 }

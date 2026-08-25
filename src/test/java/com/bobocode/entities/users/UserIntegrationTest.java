@@ -24,9 +24,8 @@ public class UserIntegrationTest {
     @Test
     void shouldSaveAndRetrieveUser() {
         Role role = new Role();
-        role.setId(20L);
         role.setName("STAFF");
-        roleRepository.save(role);
+        Role savedRole = roleRepository.save(role);
 
         User user = new User();
         user.setEmail("user@test.com");
@@ -36,7 +35,7 @@ public class UserIntegrationTest {
         user.setAge(25);
         user.setGender(Gender.FEMALE);
         user.setActive(true);
-        user.setRole(role);
+        user.setRole(savedRole);
 
         userRepository.save(user);
 
@@ -52,6 +51,6 @@ public class UserIntegrationTest {
         assertEquals(25, foundUser.getAge());
         assertEquals(Gender.FEMALE, foundUser.getGender());
         assertTrue(foundUser.isActive());
-        assertEquals(role.getId(), foundUser.getRole().getId());
+        assertEquals(savedRole.getId(), foundUser.getRole().getId());
     }
 }

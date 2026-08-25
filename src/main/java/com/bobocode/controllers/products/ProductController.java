@@ -7,6 +7,7 @@ import com.bobocode.services.products.filtering.FilterProductService;
 import com.bobocode.services.products.sorting.SortProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -65,7 +66,7 @@ public class ProductController {
      * GET /api/v1/products/{id}
      */
     @GetMapping("/{id}")
-    public ProductDto getProductById(@PathVariable long id) {
+    public ProductDto getProductById(@PathVariable Long id) {
         return marketPlaceService.getProductById(id);
     }
 
@@ -75,7 +76,7 @@ public class ProductController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void addNewProduct(@RequestBody ProductCreateDto productCreateDto) {
+    public void addNewProduct(@RequestBody @Validated ProductCreateDto productCreateDto) {
         marketPlaceService.addNewProduct(productCreateDto);
     }
 
@@ -84,7 +85,7 @@ public class ProductController {
      * PUT /api/v1/products/{id}
      */
     @PutMapping("/{id}")
-    public void updateProduct(@PathVariable long id, @RequestBody ProductDto productDto) {
+    public void updateProduct(@PathVariable Long id, @RequestBody @Validated ProductDto productDto) {
         marketPlaceService.editProduct(id, productDto);
     }
 
@@ -94,7 +95,7 @@ public class ProductController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProductById(@PathVariable long id) {
+    public void deleteProductById(@PathVariable Long id) {
         marketPlaceService.removeProduct(id);
     }
 }

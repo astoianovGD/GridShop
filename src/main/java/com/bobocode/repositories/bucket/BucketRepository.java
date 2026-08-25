@@ -18,5 +18,5 @@ public interface BucketRepository extends JpaRepository<Bucket, Long> {
      * @param userId the user ID
      * @return an optional containing the bucket if found
      */
-    Optional<Bucket> findByUserId(long userId);
+    Optional<Bucket> findByUserId(Long userId);
 }

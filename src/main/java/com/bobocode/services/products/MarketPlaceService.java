@@ -88,7 +88,7 @@ public class MarketPlaceService {
      * @throws EntityNotFoundException if the product is not found
      */
     @Transactional
-    public List<UserDto> removeProduct(final long productId) {
+    public List<UserDto> removeProduct(final Long productId) {
         Product product = productRepository
                 .findProductByIsActiveAndId(true, productId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -114,7 +114,7 @@ public class MarketPlaceService {
      * @param productDto the product with updated information
      */
     @Transactional
-    public void editProduct(final long id, final ProductDto productDto) {
+    public void editProduct(final Long id, final ProductDto productDto) {
         Product existingProduct = productRepository
                 .findProductByIsActiveAndId(true, id)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -155,7 +155,7 @@ public class MarketPlaceService {
      * @return the requested product
      * @throws EntityNotFoundException if the product is not found
      */
-    public ProductDto getProductById(final long productId) {
+    public ProductDto getProductById(final Long productId) {
         Product product = productRepository
                 .findProductByIsActiveAndId(true, productId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -174,7 +174,7 @@ public class MarketPlaceService {
      */
     @Transactional
     public void updateProductField(
-            final long productId, final Consumer<Product> fieldUpdater
+            final Long productId, final Consumer<Product> fieldUpdater
     ) {
         Product existingProduct = productRepository
                 .findProductByIsActiveAndId(true, productId)
