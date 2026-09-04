@@ -15,6 +15,11 @@ import com.bobocode.repositories.products.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.bobocode.dto.products.ProductFilterDto;
+import com.bobocode.enums.SearchOperations;
+import com.bobocode.services.filter_and_search.GenericSpecificationsBuilder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -146,6 +151,29 @@ public class MarketPlaceService {
                 .stream()
                 .map(productMapper::toDto)
                 .toList();
+    }
+
+    /**
+     * Retrieves a paginated list of products matching dynamic filtering and sorting criteria.
+     *
+     * @param filter   the filter criteria
+     * @param pageable pagination and sorting parameters
+     * @return a page of product DTOs
+     */
+    public Page<ProductDto> getProducts(final ProductFilterDto filter, final Pageable pageable) {
+        GenericSpecificationsBuilder<Product> builder = new GenericSpecificationsBuilder<>();
+
+        builder.with("isActive", SearchOperations.EQUAL, true);
+
+        if (filter != null) {
+            builder.with("name", SearchOperations.LIKE, filter.name())
+                   .with("price", SearchOperations.GREATER_THAN, filter.minPrice())
+                   .with("price", SearchOperations.LESS_THAN, filter.maxPrice())
+                   .with("category.id", SearchOperations.IN, filter.categoryIds());
+        }
+
+        Page<Product> productPage = productRepository.findAll(builder.build(), pageable);
+        return productPage.map(productMapper::toDto);
     }
 
     /**

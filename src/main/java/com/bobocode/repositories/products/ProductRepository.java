@@ -3,6 +3,7 @@ package com.bobocode.repositories.products;
 import com.bobocode.entities.products.Product;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ import java.util.Optional;
  * Repository for managing {@link Product} entities.
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     /**
      * Finds active products whose name starts with the given string,

@@ -2,15 +2,16 @@ package com.bobocode.controllers.products;
 
 import com.bobocode.dto.products.ProductCreateDto;
 import com.bobocode.dto.products.ProductDto;
+import com.bobocode.dto.products.ProductFilterDto;
 import com.bobocode.services.products.MarketPlaceService;
-import com.bobocode.services.products.filtering.FilterProductService;
-import com.bobocode.services.products.sorting.SortProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -19,46 +20,17 @@ import java.util.List;
 public class ProductController {
 
     private final MarketPlaceService marketPlaceService;
-    private final FilterProductService filterProductService;
-    private final SortProductService sortProductService;
 
     /**
      * Retrieves products with optional filtering, sorting, or returns all if no params provided.
      * GET /api/v1/products
      */
     @GetMapping
-    public List<ProductDto> getProducts(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String startsWith,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false, defaultValue = "asc") String direction
+    public Page<ProductDto> getProducts(
+            ProductFilterDto filter,
+            @PageableDefault(sort = "id") Pageable pageable
     ) {
-        if (startsWith != null) {
-            return filterProductService.filterByNameStartingWith(startsWith);
-        }
-        if (search != null) {
-            return filterProductService.filterByNameContains(search);
-        }
-        if (minPrice != null) {
-            return filterProductService.filterByPriceGreaterThan(minPrice);
-        }
-        if (maxPrice != null) {
-            return filterProductService.filterByPriceLowerThan(maxPrice);
-        }
-
-        if (sortBy != null) {
-            boolean isAsc = "asc".equalsIgnoreCase(direction);
-            if ("price".equalsIgnoreCase(sortBy)) {
-                return isAsc ? sortProductService.filterByPriceAsc() : sortProductService.filterByProductDesc();
-            } else if ("name".equalsIgnoreCase(sortBy)) {
-                return isAsc ? sortProductService.filterByNameAsc() : sortProductService.filterByNameDesc();
-            }
-        }
-
-
-        return marketPlaceService.getAllProducts();
+        return marketPlaceService.getProducts(filter, pageable);
     }
 
     /**
