@@ -2,6 +2,7 @@ package com.bobocode;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import java.util.Locale;
 import java.util.TimeZone;
@@ -9,6 +10,7 @@ import java.util.TimeZone;
 /**
  * Main application class.
  */
+@EnableFeignClients
 @SpringBootApplication
 public class Main {
 
