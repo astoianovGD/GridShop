@@ -1,7 +1,10 @@
 package com.bobocode;
 
+import com.bobocode.configs.CustomLoadBalancerConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
+import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClients;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import java.util.Locale;
@@ -12,6 +15,10 @@ import java.util.TimeZone;
  */
 @EnableFeignClients
 @SpringBootApplication
+@LoadBalancerClients(value = {
+        @LoadBalancerClient(name = "user-service", configuration = CustomLoadBalancerConfiguration.class),
+        @LoadBalancerClient(name = "product-service", configuration = CustomLoadBalancerConfiguration.class)
+})
 public class Main {
 
     /**

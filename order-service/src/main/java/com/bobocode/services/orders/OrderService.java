@@ -1,5 +1,8 @@
 package com.bobocode.services.orders;
 
+import com.bobocode.clients.product.ProductClient;
+import com.bobocode.clients.user.UserClient;
+import com.bobocode.dto.products.ProductDto;
 import com.bobocode.dto.orders.OrderDto;
 import com.bobocode.entities.orders.Order;
 import com.bobocode.entities.orders.OrderItem;
@@ -39,8 +42,15 @@ public class OrderService {
      */
     private final OrderMapper orderMapper;
 
-    // TODO: Inject Feign UserClient when implemented to validate user existence
-    // TODO: Inject Feign ProductClient when implemented to fetch product details and price
+    /**
+     * Feign client for user-service communication.
+     */
+    private final UserClient userClient;
+
+    /**
+     * Feign client for product-service communication.
+     */
+    private final ProductClient productClient;
 
     /**
      * Transfers products from the user's bucket to the order history table.
@@ -49,6 +59,9 @@ public class OrderService {
      */
     @Transactional
     public void createOrderFromBucket(final Long userId) {
+        // Validate user existence via user-service Feign client
+        userClient.getUserById(userId);
+
         Bucket bucket = bucketRepository.findByUserId(userId).orElse(null);
 
         if (bucket == null || bucket.getItems().isEmpty()) {
@@ -65,9 +78,9 @@ public class OrderService {
                     item.setOrder(order);
                     item.setProductId(bucketItem.getProductId());
                     item.setQuantity(bucketItem.getQuantity());
-                    // Placeholder until Feign ProductClient retrieves current price & name
-                    item.setPriceAtPurchase(BigDecimal.ZERO);
-                    item.setProductName("Product #" + bucketItem.getProductId());
+                    ProductDto product = productClient.getProductById(bucketItem.getProductId());
+                    item.setPriceAtPurchase(product != null ? product.getPrice() : BigDecimal.ZERO);
+                    item.setProductName(product != null ? product.getName() : "Product #" + bucketItem.getProductId());
                     return item;
                 })
                 .toList();
@@ -88,6 +101,9 @@ public class OrderService {
      * @return a list of user's orders DTOs
      */
     public List<OrderDto> getUserOrders(final Long userId) {
+        // Validate user existence via user-service Feign client
+        userClient.getUserById(userId);
+
         return orderRepository.findAllByUserId(userId).stream()
                 .map(orderMapper::toDto)
                 .toList();

@@ -1,6 +1,8 @@
 package com.bobocode.services.bucket;
 
+import com.bobocode.clients.product.ProductClient;
 import com.bobocode.dto.bucket.BucketItemDto;
+import com.bobocode.dto.products.ProductDto;
 import com.bobocode.entities.bucket.Bucket;
 import com.bobocode.entities.bucket.BucketItem;
 import com.bobocode.mappers.bucket.BucketItemMapper;
@@ -35,7 +37,10 @@ public class BucketService {
      */
     private final BucketItemMapper bucketItemMapper;
 
-    // TODO: Inject Feign ProductClient when implemented to validate product existence and fetch product details
+    /**
+     * Feign client for product-service communication.
+     */
+    private final ProductClient productClient;
 
     /**
      * Adds a product to the specified user's bucket.
@@ -48,6 +53,9 @@ public class BucketService {
     public void addProductToBucket(
             final Long userId, final Long productId, final Integer amount
     ) {
+        // Validate product existence via product-service Feign client
+        productClient.getProductById(productId);
+
         Bucket bucket = getOrCreateBucket(userId);
 
         BucketItem bucketItem = bucketItemRepository
@@ -101,7 +109,10 @@ public class BucketService {
         }
 
         return bucket.getItems().stream()
-                .map(bucketItemMapper::toDto)
+                .map(item -> {
+                    ProductDto product = productClient.getProductById(item.getProductId());
+                    return bucketItemMapper.toDto(item, product);
+                })
                 .toList();
     }
 

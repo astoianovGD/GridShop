@@ -56,6 +56,21 @@ services:
       postgres_db:
         condition: service_started
 
+  user-service-2:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8084:8081"
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      postgres_db:
+        condition: service_started
+
   product-service:
     build:
       context: ./product-service
@@ -70,6 +85,22 @@ services:
         condition: service_healthy
       postgres_db:
         condition: service_started
+
+  product-service-2:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8085:8082"
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      postgres_db:
+        condition: service_started
+
 
   order-service:
     build:
