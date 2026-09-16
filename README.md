@@ -303,3 +303,4 @@ GridShop
 Java Backend Developer  
 - GitHub (Work): [@astoianovGD](https://github.com/astoianovGD)  
 - GitHub (Personal): [@StoyanowAlexey](https://github.com/StoyanowAlexey)
+
