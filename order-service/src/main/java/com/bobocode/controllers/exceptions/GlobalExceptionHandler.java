@@ -2,6 +2,8 @@ package com.bobocode.controllers.exceptions;
 
 import com.bobocode.dto.error.ErrorResponse;
 import com.bobocode.exceptions.EntityNotFoundException;
+import com.bobocode.exceptions.ServiceUnavailableException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -142,6 +144,27 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
+     * Handles 503 Service Unavailable when downstream service is down or circuit breaker is open.
+     */
+    @ExceptionHandler({ServiceUnavailableException.class, CallNotPermittedException.class})
+    public ResponseEntity<ErrorResponse> handleServiceUnavailable(
+            final Exception ex,
+            final HttpServletRequest request
+    ) {
+        log.error("Service unavailable: {}", ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error(HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
 
     /**

@@ -38,7 +38,7 @@ public class BucketService {
     private final BucketItemMapper bucketItemMapper;
 
     /**
-     * Feign client for product-service communication.
+     * Client interface for product-service communication.
      */
     private final ProductClient productClient;
 

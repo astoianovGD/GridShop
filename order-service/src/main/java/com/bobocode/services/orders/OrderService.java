@@ -43,12 +43,12 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     /**
-     * Feign client for user-service communication.
+     * Client interface for user-service communication.
      */
     private final UserClient userClient;
 
     /**
-     * Feign client for product-service communication.
+     * Client interface for product-service communication.
      */
     private final ProductClient productClient;
 
