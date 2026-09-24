@@ -5,6 +5,7 @@ import com.bobocode.dto.bucket.BucketItemDto;
 import com.bobocode.services.bucket.BucketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/users/{userId}/bucket")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
 public class BucketController {
 
     private final BucketService bucketService;

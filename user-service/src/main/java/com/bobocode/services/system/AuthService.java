@@ -1,49 +1,65 @@
 package com.bobocode.services.system;
 
+import com.bobocode.dto.auth.JwtResponse;
+import com.bobocode.dto.auth.LoginRequest;
 import com.bobocode.entities.users.User;
 import com.bobocode.exceptions.EntityNotFoundException;
 import com.bobocode.repositories.users.UserRepository;
+import com.bobocode.security.JWTUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service for handling user authentication.
+ * Service for handling user authentication and token generation.
  */
-@RequiredArgsConstructor
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class AuthService {
 
-    /**
-     * Repository for managing user entities.
-     */
+    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final JWTUtil jwtUtil;
 
     /**
-     * Signs a user in using their email and password.
+     * Authenticates user credentials and generates a JWT token.
      *
-     * @param email    the user's email
-     * @param password the user's password
-     * @return the authenticated user entity
-     * @throws EntityNotFoundException if credentials are invalid
+     * @param loginRequest login credentials
+     * @return response with JWT token and user info
      */
     @Transactional(readOnly = true)
-    public User signIn(final String email, final String password) {
-        System.out.println("Searching in base...");
+    public JwtResponse login(final LoginRequest loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()
+                )
+        );
 
-        User user = userRepository.findByEmail(email)
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Error: Invalid email or password! Please try again."
+                        "User not found with email: " + loginRequest.getEmail()
                 ));
 
-        if (!user.getPassword().equals(password)) {
-            throw new EntityNotFoundException(
-                    "Error: Invalid email or password! Please try again."
-            );
-        }
+        String role = user.getRole() != null ? user.getRole().getName() : "USER";
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), role);
 
-        System.out.println("Successfully logged in as: "
-                + user.getRole().getName());
-        return user;
+        log.info("User {} successfully authenticated with role {}", user.getEmail(), role);
+
+        return JwtResponse.builder()
+                .token(token)
+                .type("Bearer")
+                .userId(user.getId())
+                .email(user.getEmail())
+                .role(role)
+                .build();
     }
 }

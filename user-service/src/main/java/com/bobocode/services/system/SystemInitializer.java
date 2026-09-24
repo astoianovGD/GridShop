@@ -30,6 +30,11 @@ public class SystemInitializer {
     private final RoleRepository roleRepository;
 
     /**
+     * Encoder for hashing user passwords.
+     */
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    /**
      * Checks if an admin exists, and if not, prompts to create the first admin.
      *
      * @param scanner the scanner for reading console input
@@ -56,7 +61,7 @@ public class SystemInitializer {
                     EmailValidator.getValidEmailFromConsole(scanner)
             );
             firstAdmin.setPassword(
-                    InputValidator.getValidPassword(scanner)
+                    passwordEncoder.encode(InputValidator.getValidPassword(scanner))
             );
 
             firstAdmin.setActive(true);

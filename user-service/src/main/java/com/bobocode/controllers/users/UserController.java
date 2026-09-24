@@ -5,6 +5,7 @@ import com.bobocode.dto.users.UserRegistrationDto;
 import com.bobocode.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class UserController {
      * @return a list of user DTOs
      */
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
@@ -36,6 +38,7 @@ public class UserController {
      * @return the matching user DTO
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF') or #id == authentication.principal.id")
     public UserDto getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
@@ -60,6 +63,7 @@ public class UserController {
      * @param userDto the payload containing updated details
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public void updateUser(@PathVariable Long id, @RequestBody @Validated UserDto userDto) {
         userService.editPersonalInformation(id, userDto);
     }
@@ -72,6 +76,7 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204 No Content
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUserAccount(id);
     }

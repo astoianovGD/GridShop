@@ -46,6 +46,11 @@ public class UserService {
     private final RoleRepository roleRepository;
 
     /**
+     * Encoder for hashing user passwords.
+     */
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    /**
      * Registers a new user in the system.
      *
      * @param newUser the user to register
@@ -55,6 +60,7 @@ public class UserService {
         validateEmailIsFree(newUser.getEmail());
 
         User user = userRegistrationMapper.toEntity(newUser);
+        user.setPassword(passwordEncoder.encode(newUser.getPassword()));
 
         Role userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new EntityNotFoundException(

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,7 @@ public class ProductController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public void addNewProduct(@RequestBody @Validated ProductCreateDto productCreateDto) {
         marketPlaceService.addNewProduct(productCreateDto);
     }
@@ -57,6 +59,7 @@ public class ProductController {
      * PUT /api/v1/products/{id}
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public void updateProduct(@PathVariable Long id, @RequestBody @Validated ProductDto productDto) {
         marketPlaceService.editProduct(id, productDto);
     }
@@ -67,6 +70,7 @@ public class ProductController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public void deleteProductById(@PathVariable Long id) {
         marketPlaceService.removeProduct(id);
     }

@@ -46,6 +46,11 @@ public class StaffService {
     private final RoleRepository roleRepository;
 
     /**
+     * Encoder for hashing staff passwords.
+     */
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    /**
      * Adds a new staff member.
      *
      * @param newStaff the staff member to add
@@ -55,6 +60,7 @@ public class StaffService {
         validateEmailIsFree(newStaff.getEmail());
 
         User user = staffRegistrationMapper.toEntity(newStaff);
+        user.setPassword(passwordEncoder.encode(newStaff.getPassword()));
 
         Role role = roleRepository.findByName("STAFF")
                 .orElseThrow(() -> new EntityNotFoundException(

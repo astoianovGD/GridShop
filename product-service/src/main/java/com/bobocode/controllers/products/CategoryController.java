@@ -5,6 +5,7 @@ import com.bobocode.dto.products.CategoryDto;
 import com.bobocode.services.products.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,7 @@ public class CategoryController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public void addNewCategory(@RequestBody @Validated CategoryCreateDto categoryCreateDto) {
         categoryService.addNewCategory(categoryCreateDto);
     }
@@ -60,6 +62,7 @@ public class CategoryController {
      * @param categoryDto the payload containing updated category details
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public void editCategoryById(@PathVariable Long id, @RequestBody @Validated CategoryDto categoryDto) {
         categoryService.editCategory(categoryDto, id);
     }
@@ -72,6 +75,7 @@ public class CategoryController {
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public void deleteCategoryById(@PathVariable Long id) {
         categoryService.removeCategory(id);
     }

@@ -45,7 +45,7 @@ public final class User {
      */
     @NotNull
     @NotBlank
-    @Size(min = 8, max = 40)
+    @Size(min = 8, max = 255)
     private String password;
 
     /**
