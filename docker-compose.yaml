@@ -89,6 +89,16 @@ services:
       - LOGSTASH_HOST=logstash
       - LOGSTASH_PORT=5000
       - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      # 1. Baseline: small heap to observe frequent GC runs under load with a large cache
+      - JAVA_TOOL_OPTIONS=-Xms256m -Xmx256m -XX:+UseG1GC -Xlog:gc*:stdout:time,uptime,level,tags
+
+      # 2. Fewer pauses (High Throughput): larger heap & higher pause target (500ms).
+      #    Use case: background batch jobs, ETL pipelines, report generation, analytics.
+      # - JAVA_TOOL_OPTIONS=-Xms512m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=500 -XX:InitiatingHeapOccupancyPercent=75 -Xlog:gc*:stdout:time,uptime,level,tags
+
+      # 3. Shorter pauses (Low Latency): strict pause target (50ms), triggers GC more often.
+      #    Use case: user-facing REST APIs, real-time trading, payment gateways, gaming.
+      # - JAVA_TOOL_OPTIONS=-Xms256m -Xmx256m -XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Xlog:gc*:stdout:time,uptime,level,tags
     depends_on:
       eureka-server:
         condition: service_healthy

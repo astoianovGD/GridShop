@@ -13,7 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -21,6 +21,18 @@ import java.util.List;
 public class ProductController {
 
     private final MarketPlaceService marketPlaceService;
+
+    /**
+     * Populates the local LRU product cache with synthetic items for JVM GC & load testing.
+     * POST /api/v1/products/cache/warmup?count=50000
+     */
+    @PostMapping("/cache/warmup")
+    public Map<String, Integer> warmupCache(
+            @RequestParam(defaultValue = "50000") final int count
+    ) {
+        int currentSize = marketPlaceService.warmupCacheForGcTest(count);
+        return Map.of("cacheSize", currentSize);
+    }
 
     /**
      * Retrieves products with optional filtering, sorting, or returns all if no params provided.

@@ -1,5 +1,6 @@
 package com.bobocode.services.products;
 
+import com.bobocode.concurrency.cache.LruCache;
 import com.bobocode.dto.products.ProductDto;
 import com.bobocode.entities.products.Category;
 import com.bobocode.entities.products.Product;
@@ -17,6 +18,7 @@ import com.bobocode.services.filter_and_search.GenericSpecificationsBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -27,6 +29,13 @@ import java.util.function.Consumer;
 @Service
 @Transactional(readOnly = true)
 public class MarketPlaceService {
+
+    private static final int DEFAULT_CACHE_CAPACITY = 100_000;
+
+    /**
+     * Thread-safe local LRU cache for products by ID.
+     */
+    private final LruCache<Long, ProductDto> productCache = new LruCache<>(DEFAULT_CACHE_CAPACITY);
 
     /**
      * Repository for managing products.
@@ -88,6 +97,7 @@ public class MarketPlaceService {
 
         product.setActive(false);
         productRepository.save(product);
+        productCache.evict(productId);
     }
 
     /**
@@ -115,7 +125,8 @@ public class MarketPlaceService {
 
         existingProduct.setCategory(category);
 
-        productRepository.save(existingProduct);
+        Product saved = productRepository.save(existingProduct);
+        productCache.put(id, productMapper.toDto(saved));
     }
 
     /**
@@ -154,20 +165,43 @@ public class MarketPlaceService {
     }
 
     /**
-     * Retrieves a product from the marketplace by its ID.
+     * Retrieves a product from the marketplace by its ID, using the thread-safe LRU cache.
      *
      * @param productId the ID of the product to retrieve
      * @return the requested product
      * @throws EntityNotFoundException if the product is not found
      */
     public ProductDto getProductById(final Long productId) {
-        Product product = productRepository
-                .findProductByIsActiveAndId(true, productId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Product with id " + productId + " not found!"
-                ));
+        return productCache.computeIfAbsent(productId, id -> {
+            Product product = productRepository
+                    .findProductByIsActiveAndId(true, id)
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Product with id " + id + " not found!"
+                    ));
+            return productMapper.toDto(product);
+        });
+    }
 
-        return productMapper.toDto(product);
+    /**
+     * Populates the local LRU cache with a large number of synthetic ProductDto entries
+     * to simulate high Old Generation memory occupancy for JVM Garbage Collection experiments.
+     *
+     * @param count number of synthetic cache entries to insert
+     * @return current cache size after warm-up
+     */
+    public int warmupCacheForGcTest(final int count) {
+        int entries = Math.min(count, productCache.getMaxCapacity());
+        for (int i = 1; i <= entries; i++) {
+            long syntheticId = 1_000_000L + i;
+            ProductDto dto = new ProductDto();
+            dto.setId(syntheticId);
+            dto.setName("Cached-Product-Item-" + i + "-" + "X".repeat(20));
+            dto.setPrice(BigDecimal.valueOf(100.0 + (i % 500)));
+            dto.setCategoryName("Cached-Category-" + (i % 50));
+            dto.setIsActive(true);
+            productCache.put(syntheticId, dto);
+        }
+        return productCache.size();
     }
 
     /**
@@ -189,6 +223,7 @@ public class MarketPlaceService {
 
         fieldUpdater.accept(existingProduct);
 
-        productRepository.save(existingProduct);
+        Product saved = productRepository.save(existingProduct);
+        productCache.put(productId, productMapper.toDto(saved));
     }
 }
