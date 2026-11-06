@@ -292,7 +292,7 @@
                     <!-- Use @{argLine} for late property evaluation so IDE doesn't complain -->
                     <argLine>
                         @{argLine}
-                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/5.20.0/mockito-core-5.20.0.jar
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
                     </argLine>
                 </configuration>
             </plugin>
