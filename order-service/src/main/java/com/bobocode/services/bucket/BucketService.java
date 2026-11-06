@@ -143,4 +143,15 @@ public class BucketService {
                 .ifPresent(bucket -> bucketItemRepository
                         .deleteAllByBucketId(bucket.getId()));
     }
+
+    /**
+     * Removes a deactivated product from all users' buckets.
+     * Invoked asynchronously when a {@code ProductRemovedEvent} is consumed from Kafka.
+     *
+     * @param productId the ID of the removed product
+     */
+    @Transactional
+    public void removeProductFromAllBuckets(final Long productId) {
+        bucketItemRepository.deleteAllByProductId(productId);
+    }
 }

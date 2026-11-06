@@ -9,6 +9,7 @@ import com.bobocode.entities.orders.OrderItem;
 import com.bobocode.entities.bucket.Bucket;
 import com.bobocode.exceptions.EntityNotFoundException;
 import com.bobocode.mappers.orders.OrderMapper;
+import com.bobocode.messaging.OrderEventProducer;
 import com.bobocode.repositories.bucket.BucketRepository;
 import com.bobocode.repositories.orders.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,11 @@ public class OrderService {
     private final ProductClient productClient;
 
     /**
+     * Kafka producer for publishing order creation events.
+     */
+    private final OrderEventProducer orderEventProducer;
+
+    /**
      * Transfers products from the user's bucket to the order history table.
      *
      * @param userId the ID of the user making the purchase
@@ -87,11 +93,23 @@ public class OrderService {
 
         order.getItems().addAll(orderItems);
 
-        orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+
+        List<Long> purchasedProductIds = orderItems.stream()
+                .map(OrderItem::getProductId)
+                .toList();
 
         bucket.getItems().clear();
 
         bucketRepository.save(bucket);
+
+        if (orderEventProducer != null) {
+            orderEventProducer.publishOrderCreatedAsync(
+                    savedOrder != null ? savedOrder.getId() : null,
+                    userId,
+                    purchasedProductIds
+            );
+        }
     }
 
     /**

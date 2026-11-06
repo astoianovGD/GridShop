@@ -7,6 +7,7 @@ import com.bobocode.entities.products.Product;
 import com.bobocode.exceptions.EntityNotFoundException;
 import com.bobocode.mappers.products.ProductCreateMapper;
 import com.bobocode.mappers.products.ProductMapper;
+import com.bobocode.messaging.ProductEventProducer;
 import com.bobocode.repositories.products.CategoryRepository;
 import com.bobocode.repositories.products.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,11 @@ public class MarketPlaceService {
     private final CategoryRepository categoryRepository;
 
     /**
+     * Kafka producer for publishing product lifecycle events.
+     */
+    private final ProductEventProducer productEventProducer;
+
+    /**
      * Adds a new product to the marketplace.
      *
      * @param createDto the product to be added
@@ -98,6 +104,7 @@ public class MarketPlaceService {
         product.setActive(false);
         productRepository.save(product);
         productCache.evict(productId);
+        productEventProducer.publishProductRemovedAsync(productId, product.getName());
     }
 
     /**
