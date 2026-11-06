@@ -1,0 +1,45 @@
+--- Execution profile ---
+Total samples       : 550
+
+       bytes  percent  samples  top
+  ----------  -------  -------  ---
+    57147283   19.82%      109  io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler$$Lambda.0x00007fff01e3d548
+    55574422   19.27%      106  byte[]
+    14155749    4.91%       27  java.lang.Object[]
+    13631462    4.73%       26  java.lang.String
+     7864305    2.73%       15  java.util.HashMap$Node[]
+     6815731    2.36%       13  io.micrometer.common.KeyValue[]
+     6815731    2.36%       13  java.util.HashMap$Node
+     5767157    2.00%       11  java.util.LinkedHashMap
+     4194296    1.45%        8  org.springframework.core.ResolvableType
+     4194296    1.45%        8  java.util.ArrayList
+     3670009    1.27%        7  io.micrometer.core.instrument.Tag[]
+     3145722    1.09%        6  io.micrometer.core.instrument.ImmutableTag
+     3145722    1.09%        6  java.util.HashMap
+     2621435    0.91%        5  java.util.concurrent.ConcurrentHashMap
+     2621435    0.91%        5  io.micrometer.common.KeyValues
+     2621435    0.91%        5  java.util.ArrayList$Itr
+     2621435    0.91%        5  org.springframework.web.util.pattern.PathPattern$MatchingContext
+     2621435    0.91%        5  java.util.LinkedHashMap$Entry
+     2621435    0.91%        5  java.util.concurrent.ConcurrentHashMap$Node
+     2621435    0.91%        5  java.lang.Class[]
+     2621435    0.91%        5  java.util.stream.ReferencePipeline$Head
+     2097148    0.73%        4  java.util.Collections$UnmodifiableRandomAccessList
+     2097148    0.73%        4  com.fasterxml.jackson.databind.ser.DefaultSerializerProvider$Impl
+     2097148    0.73%        4  java.util.concurrent.ConcurrentHashMap$Node[]
+     2097148    0.73%        4  java.util.regex.Matcher
+     1572861    0.55%        3  java.lang.String[]
+     1572861    0.55%        3  org.h2.mvstore.tx.TxDecisionMaker$LockDecisionMaker
+     1572861    0.55%        3  java.util.HashMap$KeyIterator
+     1572861    0.55%        3  java.lang.Integer
+     1572861    0.55%        3  brave.baggage.CorrelationUpdateScope$Multiple
+     1572861    0.55%        3  char[]
+     1572861    0.55%        3  org.hibernate.sql.results.graph.entity.internal.EntityResultInitializer
+     1572861    0.55%        3  java.lang.StringBuilder
+     1572861    0.55%        3  java.nio.HeapCharBuffer
+     1572861    0.55%        3  io.micrometer.observation.SimpleEvent
+     1048574    0.36%        2  org.hibernate.query.sqm.tree.select.SqmQuerySpec
+     1048574    0.36%        2  java.util.LinkedHashMap$LinkedValueIterator
+     1048574    0.36%        2  java.io.Reader$2
+     1048574    0.36%        2  org.springframework.core.SerializableTypeWrapper$MethodParameterTypeProvider
+     1048574    0.36%        2  java.nio.HeapByteBuffer

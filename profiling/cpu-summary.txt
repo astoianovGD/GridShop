@@ -1,0 +1,47 @@
+--- Execution profile ---
+Total samples       : 522
+not_walkable_not_Java: 8 (1.53%)
+unknown_Java        : 57 (10.92%)
+
+          ns  percent  samples  top
+  ----------  -------  -------  ---
+   920000000   17.62%       92  __psynch_cvwait
+   450000000    8.62%       45  [unknown_Java]
+   360000000    6.90%       36  kevent
+   350000000    6.70%       35  write
+   100000000    1.92%       10  Arena::contains
+    60000000    1.15%        6  ObjAllocator::initialize
+    60000000    1.15%        6  Node::dominates
+    60000000    1.15%        6  read
+    50000000    0.96%        5  __psynch_cvsignal
+    40000000    0.77%        4  mach_absolute_time
+    40000000    0.77%        4  pthread_jit_write_protect_np
+    40000000    0.77%        4  Compile::find_alias_type
+    40000000    0.77%        4  PhaseChaitin::Split
+    40000000    0.77%        4  PhaseIdealLoop::build_loop_early
+    40000000    0.77%        4  G1HeapRegion::block_size
+    40000000    0.77%        4  PhaseIterGVN::subsume_node
+    30000000    0.57%        3  java.util.HashMap.getNode
+    30000000    0.57%        3  ciObjectFactory::get_metadata
+    30000000    0.57%        3  java.util.Objects.equals
+    30000000    0.57%        3  Dictionary::find_class
+    30000000    0.57%        3  org.apache.tomcat.util.net.NioEndpoint$Poller.run
+    30000000    0.57%        3  G1ParScanThreadState::trim_queue_to_threshold
+    30000000    0.57%        3  C1 Runtime slow_subtype_check_blob
+    20000000    0.38%        2  java.lang.AbstractStringBuilder.append
+    20000000    0.38%        2  IndexSet::insert
+    20000000    0.38%        2  java.lang.String.getBytes
+    20000000    0.38%        2  InstanceKlass::find_method_index
+    20000000    0.38%        2  copy_byte_f
+    20000000    0.38%        2  org.springframework.util.ObjectUtils.nullSafeEquals
+    20000000    0.38%        2  Matcher::find_shared
+    20000000    0.38%        2  check_bounds
+    20000000    0.38%        2  arrayof_jlong_disjoint_arraycopy
+    20000000    0.38%        2  arrayof_jbyte_disjoint_arraycopy
+    20000000    0.38%        2  pthread_testcancel
+    20000000    0.38%        2  java.lang.invoke.DirectMethodHandle.allocateInstance
+    20000000    0.38%        2  Dict::Insert
+    20000000    0.38%        2  Type::Initialize_shared(Compile*)::$_0::__invoke
+    20000000    0.38%        2  RegionNode::is_CFG
+    20000000    0.38%        2  ConnectionGraph::compute_escape
+    20000000    0.38%        2  PhaseIdealLoop::build_loop_late_post_work
