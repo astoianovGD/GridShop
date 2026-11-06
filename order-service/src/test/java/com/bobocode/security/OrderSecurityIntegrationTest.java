@@ -12,7 +12,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "spring.kafka.listener.auto-startup=false")
+@SpringBootTest(properties = {
+        "spring.kafka.listener.auto-startup=false",
+        "spring.kafka.admin.auto-create=false"
+})
 @AutoConfigureMockMvc
 class OrderSecurityIntegrationTest {
 
