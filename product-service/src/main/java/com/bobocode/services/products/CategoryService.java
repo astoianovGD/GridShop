@@ -1,5 +1,6 @@
 package com.bobocode.services.products;
 
+import com.bobocode.configs.RedisCacheConfig;
 import com.bobocode.dto.products.CategoryCreateDto;
 import com.bobocode.dto.products.CategoryDto;
 import com.bobocode.entities.products.Category;
@@ -9,6 +10,8 @@ import com.bobocode.mappers.products.CategoryMapper;
 import com.bobocode.repositories.products.CategoryRepository;
 import com.bobocode.repositories.products.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,11 +46,15 @@ public class CategoryService {
     private final CategoryMapper categoryMapper;
 
     /**
-     * Add new category.
+     * Add new category and invalidate category caches in Redis.
      *
      * @param category the name of the category
      */
     @Transactional
+    @CacheEvict(
+            value = {RedisCacheConfig.CATEGORIES_CACHE, RedisCacheConfig.CATEGORY_BY_ID_CACHE},
+            allEntries = true
+    )
     public void addNewCategory(final CategoryCreateDto category) {
         if (isCategoryNameExists(category.getName())) {
             throw new IllegalArgumentException(
@@ -59,11 +66,16 @@ public class CategoryService {
     }
 
     /**
-     * Changing existing category.
+     * Changing existing category and invalidating category caches in Redis.
      *
      * @param categoryDto the new name of the category
      * @param id          the ID of the category to update
      */
+    @Transactional
+    @CacheEvict(
+            value = {RedisCacheConfig.CATEGORIES_CACHE, RedisCacheConfig.CATEGORY_BY_ID_CACHE},
+            allEntries = true
+    )
     public void editCategory(final CategoryDto categoryDto, final Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -84,13 +96,18 @@ public class CategoryService {
     }
 
     /**
-     * Removes a category by its ID if it doesn't contain any products.
+     * Removes a category by its ID if it doesn't contain any products,
+     * and invalidates category caches in Redis.
      *
      * @param categoryId the ID of the category to remove
      * @throws EntityNotFoundException if the category is not found
      * @throws IllegalStateException   if the category contains products
      */
     @Transactional
+    @CacheEvict(
+            value = {RedisCacheConfig.CATEGORIES_CACHE, RedisCacheConfig.CATEGORY_BY_ID_CACHE},
+            allEntries = true
+    )
     public void removeCategory(final Long categoryId) {
         if (!categoryRepository.existsById(categoryId)) {
             throw new EntityNotFoundException(
@@ -119,10 +136,11 @@ public class CategoryService {
     }
 
     /**
-     * Retrieves a list of all categories.
+     * Retrieves a list of all categories (cached in Redis).
      *
      * @return a list containing all categories
      */
+    @Cacheable(value = RedisCacheConfig.CATEGORIES_CACHE)
     public List<CategoryDto> getAllCategories() {
         return categoryRepository
                 .findAll()
@@ -154,6 +172,7 @@ public class CategoryService {
                 ));
     }
 
+    @Cacheable(value = RedisCacheConfig.CATEGORY_BY_ID_CACHE, key = "#id")
     public CategoryDto getCategoryDtoById(final Long id) {
         Category category = getCategoryEntityById(id);
         return categoryMapper.toDto(category);

@@ -1,6 +1,7 @@
 package com.bobocode.services.products;
 
 import com.bobocode.concurrency.cache.LruCache;
+import com.bobocode.configs.RedisCacheConfig;
 import com.bobocode.dto.products.ProductDto;
 import com.bobocode.entities.products.Category;
 import com.bobocode.entities.products.Product;
@@ -11,6 +12,9 @@ import com.bobocode.messaging.ProductEventProducer;
 import com.bobocode.repositories.products.CategoryRepository;
 import com.bobocode.repositories.products.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.bobocode.dto.products.ProductFilterDto;
@@ -69,6 +73,7 @@ public class MarketPlaceService {
      * @param createDto the product to be added
      */
     @Transactional
+    @CacheEvict(value = RedisCacheConfig.ALL_PRODUCTS_CACHE, allEntries = true)
     public void addNewProduct(
             final com.bobocode.dto.products.ProductCreateDto createDto
     ) {
@@ -94,6 +99,10 @@ public class MarketPlaceService {
      * @throws EntityNotFoundException if the product is not found
      */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = RedisCacheConfig.PRODUCT_BY_ID_CACHE, key = "#productId"),
+            @CacheEvict(value = RedisCacheConfig.ALL_PRODUCTS_CACHE, allEntries = true)
+    })
     public void removeProduct(final Long productId) {
         Product product = productRepository
                 .findProductByIsActiveAndId(true, productId)
@@ -113,6 +122,10 @@ public class MarketPlaceService {
      * @param productDto the product with updated information
      */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = RedisCacheConfig.PRODUCT_BY_ID_CACHE, key = "#id"),
+            @CacheEvict(value = RedisCacheConfig.ALL_PRODUCTS_CACHE, allEntries = true)
+    })
     public void editProduct(final Long id, final ProductDto productDto) {
         Product existingProduct = productRepository
                 .findProductByIsActiveAndId(true, id)
@@ -137,10 +150,11 @@ public class MarketPlaceService {
     }
 
     /**
-     * Retrieves a list of all products in the marketplace.
+     * Retrieves a list of all products in the marketplace (cached in Redis).
      *
      * @return a list containing all products
      */
+    @Cacheable(value = RedisCacheConfig.ALL_PRODUCTS_CACHE)
     public List<ProductDto> getAllProducts() {
         return productRepository.findAllByIsActive(true)
                 .stream()
@@ -178,6 +192,7 @@ public class MarketPlaceService {
      * @return the requested product
      * @throws EntityNotFoundException if the product is not found
      */
+    @Cacheable(value = RedisCacheConfig.PRODUCT_BY_ID_CACHE, key = "#productId")
     public ProductDto getProductById(final Long productId) {
         return productCache.computeIfAbsent(productId, id -> {
             Product product = productRepository
@@ -219,6 +234,10 @@ public class MarketPlaceService {
      * @param fieldUpdater a lambda representing the field update
      */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = RedisCacheConfig.PRODUCT_BY_ID_CACHE, key = "#productId"),
+            @CacheEvict(value = RedisCacheConfig.ALL_PRODUCTS_CACHE, allEntries = true)
+    })
     public void updateProductField(
             final Long productId, final Consumer<Product> fieldUpdater
     ) {
