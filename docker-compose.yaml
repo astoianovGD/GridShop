@@ -58,6 +58,12 @@ services:
         condition: service_healthy
       postgres_db:
         condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+      mongodb:
+        condition: service_started
 
   user-service-2:
     build:
@@ -76,6 +82,12 @@ services:
         condition: service_healthy
       postgres_db:
         condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+      mongodb:
+        condition: service_started
 
   product-service:
     build:
@@ -92,6 +104,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - MONGODB_URI=mongodb://mongodb:27017/gridshop_nosql
       # 1. Baseline: small heap to observe frequent GC runs under load with a large cache
       - JAVA_TOOL_OPTIONS=-Xms256m -Xmx256m -XX:+UseG1GC -Xlog:gc*:stdout:time,uptime,level,tags
 
@@ -106,6 +119,12 @@ services:
       eureka-server:
         condition: service_healthy
       postgres_db:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+      mongodb:
         condition: service_started
 
   product-service-2:
@@ -123,10 +142,17 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - MONGODB_URI=mongodb://mongodb:27017/gridshop_nosql
     depends_on:
       eureka-server:
         condition: service_healthy
       postgres_db:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+      mongodb:
         condition: service_started
 
   order-service:
@@ -147,6 +173,12 @@ services:
         condition: service_healthy
       postgres_db:
         condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+      mongodb:
+        condition: service_started
 
   api-gateway:
     build:
@@ -164,6 +196,12 @@ services:
       eureka-server:
         condition: service_healthy
       postgres_db:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
+      mongodb:
         condition: service_started
 
   elasticsearch:
@@ -259,6 +297,13 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
     restart: unless-stopped
 
 volumes:

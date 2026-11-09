@@ -31,6 +31,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**", "/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/products/cache/warmup").permitAll()
+                        .requestMatchers("/api/v1/products/*/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
                         .anyRequest().authenticated()
